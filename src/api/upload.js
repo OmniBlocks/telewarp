@@ -10,8 +10,9 @@ const COUNTER_KEY = "project_counter";
 const LAST_PROJECTS_KEY = "projects:recent";
 
 const Profanease = require("profanease");
-const filter = new Profanease({ lang: "all" });
+const filter = new Profanease({ lang: "en" });
 filter.addWords(["automodmute"]);
+filter.removeWords(["dang", "damn", "hell", "crap", "lmao"])
 
 module.exports = async (req, res, db, dirname) => {
   const tmpDir = path.join(dirname, "tmp");
@@ -104,6 +105,7 @@ module.exports = async (req, res, db, dirname) => {
     }
 
     let projectDescription = req.body.projectDescription || "";
+    console.log(filter.clean(projectDescription));
     if (filter.check(projectDescription)) projectDescription = "";
 
     // ---------------- store project metadata ----------------
