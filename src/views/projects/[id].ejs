@@ -26,14 +26,27 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background-color: #59c059;
+        background-color: black;
         display: flex;
         align-items: center;
         justify-content: center;
         flex-direction: column;
         z-index: 10000;
       ">
-        <p style="color:white; font-size:16px; margin-bottom:10px;" id="progressText">Loading project data...</p>
+        <h2 style="color:white; margin-bottom:10px;" id="progressText">Loading project</h2>
+        <div id="progressContainer" style="
+          width: 80%;
+          height: 8px;
+          border: 1px white solid;
+          overflow: hidden;
+        ">
+          <div id="progressBar" style="
+            width: 0%;
+            height: 100%;
+            background-color: white;
+            transition: width 0.2s ease;
+          "></div>
+        </div>
       </div>
 
       <!-- Green flag overlay -->
@@ -43,7 +56,7 @@
         left:0;
         width:100%;
         height:100%;
-        display:flex;  /* show immediately */
+        display:flex;
         align-items:center;
         justify-content:center;
         z-index:9000;
@@ -52,12 +65,49 @@
       ">
         <img src="/images/flag.svg" alt="Green Flag" style="width:64px; height:64px;">
       </div>
+
+      <!-- Custom Security Manager Modal -->
+      <div id="securityModal" style="
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: black;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 11000;
+        flex-direction: column;
+        color: white;
+        padding: 20px;
+        box-sizing: border-box;
+        line-height: 1;
+        font-size: 0.85em;
+        text-align: center;
+      ">
+        <h1 style="margin:0">Untrusted extension</h1>
+        <p style="margin:0">This extension will run without the sandbox, meaning it can access anything in the page. Review the code before continuing.</p>
+        <pre id="extensionCode" style="
+          padding: 4px;
+          border-radius: 4px;
+          color: white;
+          width: 95%;
+          overflow: auto; 
+          font-size: 0.7em;
+          text-align: left;
+          margin-top:8px;
+        ">Loading code...</pre>
+        <div style="margin-top:8px;">
+          <button id="allowExtensionBtn">Continue</button>
+        </div>
+      </div>
+
     </div>
 
     <% 
       const platform = platforms.find(p => p.id === project.lang_id);
       if (platform) { 
-        // Construct project URL relative to the current host
         const editLink = platform.edit.replace("{url}", '');
     %>
       <a href="<%= editLink %>" target="_blank" id="editLink">Edit</a>
@@ -67,9 +117,7 @@
   </p>
 
     <p><strong>Platform:</strong> 
-      <% 
-        if (platform) { 
-      %>
+      <% if (platform) { %>
         <a href="<%= platform.url %>" target="_blank"><%= platform.name %></a>
       <% } else { %>
         Unknown
@@ -101,42 +149,67 @@ document.addEventListener("DOMContentLoaded", async () => {
   scaffolding.appendTo(document.getElementById('project'));
   window.vm = scaffolding.vm;
 
-  const overlay = document.getElementById("loadingOverlay");
+  const loadingOverlay = document.getElementById("loadingOverlay");
+  const progressBar = document.getElementById("progressBar");
   const progressText = document.getElementById("progressText");
   const greenFlagOverlay = document.getElementById("greenFlagOverlay");
-  const apiRoot = window.location.origin; // automatically include protocol + domain
-  // ---------------- Asset loader with retry ----------------
-  const RETRY_DELAY = 500; // ms
+  const securityModal = document.getElementById("securityModal");
+  const extensionCodeEl = document.getElementById("extensionCode");
+  const apiRoot = window.location.origin;
 
   const storage = scaffolding.storage;
   storage.addWebStore(
     [storage.AssetType.ImageVector, storage.AssetType.ImageBitmap, storage.AssetType.Sound],
     (asset) => `${apiRoot}/api/asset?id=${asset.assetId}.${asset.dataFormat}`
   );
-  storage.onprogress = (total, loaded) => {
-    progressText.innerText = `Loading asset... (${loaded} / ${total})`;
-  };
 
+  // Asset progress
+  vm.on('ASSET_PROGRESS', (finished, total) => {
+    progressText.textContent = `Downloading assets (${finished}/${total})`;
+    const percent = total > 0 ? (finished / total) * 100 : 0;
+    progressBar.style.width = `${percent}%`;
+  });
+
+  // ---------------- Custom Security Manager ----------------
   scaffolding.setExtensionSecurityManager({
-    getSandboxMode: (url) => {
-      if (url.startsWith('https://extensions.turbowarp.org/')) return 'unsandboxed';
-      return 'iframe';
-    },
-    canLoadExtensionFromProject: (url) => {
-      return url.startsWith('https://extensions.turbowarp.org/') || confirm(`This project wants to load an extension from ${url}. Allow?`);
+    getSandboxMode: (url) => 'unsandboxed',
+    canLoadExtensionFromProject: async (url) => {
+      if (url.startsWith("https://extensions.turbowarp.org/")) return true;
+
+      securityModal.style.display = "flex";
+      extensionCodeEl.textContent = "Loading code...";
+
+      try {
+        const res = await fetch(url);
+        extensionCodeEl.textContent = await res.text();
+      } catch (e) {
+        extensionCodeEl.textContent = `Failed to fetch extension code: ${e}`;
+      }
+
+      return new Promise((resolve) => {
+        const allowBtn = document.getElementById("allowExtensionBtn");
+
+        function cleanup() {
+          allowBtn.removeEventListener("click", onAllow);
+          securityModal.style.display = "none";
+        }
+
+        function onAllow() { cleanup(); resolve(true); }
+
+        allowBtn.addEventListener("click", onAllow);
+      });
     }
   });
 
+  // ---------------- Load project ----------------
   try {
     const projectId = "<%= project.id %>";
     const res = await fetch(`${apiRoot}/api/project?id=${projectId}`);
     const projectData = await res.json();
-
     await scaffolding.loadProject(projectData);
-    overlay.style.display = "none"; // hide loading overlay after loading
 
-    progressText.textContent = ""; // clear progress text
-    greenFlagOverlay.style.display = "flex"; // keep green flag overlay visible until clicked
+    loadingOverlay.style.display = "none";
+    greenFlagOverlay.style.display = "flex";
   } catch (e) {
     console.error("Failed to load project:", e);
     progressText.textContent = "Failed to load project";
@@ -145,25 +218,18 @@ document.addEventListener("DOMContentLoaded", async () => {
   // ---------------- Green flag logic ----------------
   function triggerGreenFlag() {
     scaffolding.greenFlag();
-    greenFlagOverlay.style.display = "none"; // hide overlay after click
-    overlay.style.display = "none";
+    greenFlagOverlay.style.display = "none";
   }
 
   greenFlagOverlay.addEventListener("click", triggerGreenFlag);
   document.getElementById("greenFlagBtn").addEventListener("click", triggerGreenFlag);
 
   // ---------------- Stop and Fullscreen ----------------
-  document.getElementById("stopBtn").addEventListener("click", () => {
-    scaffolding.stopAll();
-  });
-
+  document.getElementById("stopBtn").addEventListener("click", () => scaffolding.stopAll());
   document.getElementById("fullscreenBtn").addEventListener("click", () => {
     const wrapper = document.getElementById("projectWrapper");
-    if (!document.fullscreenElement) {
-      wrapper.requestFullscreen();
-    } else {
-      document.exitFullscreen();
-    }
+    if (!document.fullscreenElement) wrapper.requestFullscreen();
+    else document.exitFullscreen();
   });
 
 });
