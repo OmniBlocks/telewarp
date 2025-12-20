@@ -246,7 +246,7 @@
       platforms.find(p => p.id === project.lang_id) || null;
 
     const editLink = platform
-      ? platform.edit.replaceAll('{url}', '')
+      ? platform.edit
       : null;
   %>
 
@@ -329,7 +329,7 @@
 <script>
 document.addEventListener("DOMContentLoaded", async () => {
   const editLink = document.getElementById("editLink");
-  if (editLink) editLink.href += window.location.origin + `/api/sb3?id=<%= project.id %>`;
+  if (editLink) editLink.href = editLink.href.replaceAll('{url}', window.location.origin + `/api/sb3?id=<%= project.id %>`);
 
   if (typeof Scaffolding === "undefined") {
     console.error("Scaffolding library not loaded yet!");
