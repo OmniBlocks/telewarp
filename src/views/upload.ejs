@@ -23,24 +23,21 @@
     pointer-events: none;
 }
 
-/* Style file input invisibly to allow drag-drop click */
+/* Invisible file input */
 .file-input {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    inset: 0;
     opacity: 0;
     cursor: pointer;
 }
 
-/* Platform span styling */
+/* Platform span */
 #projectPlatform {
     font-weight: bold;
     color: #007bff;
 }
 
-/* Submit button slight enhancement */
+/* Submit button */
 button[type="submit"] {
     padding: 0.6rem 1.2rem;
     font-size: 1rem;
@@ -49,100 +46,139 @@ button[type="submit"] {
     background-color: #007bff;
     color: white;
     cursor: pointer;
-    transition: background-color 0.2s;
 }
 
 button[type="submit"]:hover {
     background-color: #0056b3;
+}
+
+/* Error popup */
+#errorPopup {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    max-width: 320px;
+    background: #ffefef;
+    border: 1px solid #e57373;
+    color: #7a1c1c;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    display: none;
+    z-index: 1000;
 }
 </style>
 
 <div class="hero">
     <h1>Upload project</h1>
 </div>
+
 <div class="page">
     <p id="hidethisonload">Loading... Make sure to enable JavaScript if you haven't already.</p>
-    <div style="display: none;" id="uploadform">
+
+    <div id="uploadform" style="display:none">
         <h1>Upload file</h1>
-        <form action="/upload" method="post" enctype="multipart/form-data" class="upload-form">
+
+        <form action="/api/upload" method="post" enctype="multipart/form-data" class="upload-form">
             <input type="text" name="langId" hidden readonly id="langId">
+
             <div class="file-drop-zone">
-                <input type="file" name="projectFile" accept="" class="file-input">
+                <input type="file" name="projectFile" class="file-input">
                 <p class="file-drop-text">Drag & drop a file here or click to select</p>
             </div>
 
-            <!-- Show supported extensions -->
             <details>
                 <summary>Supported programming languages</summary>
                 <ul>
                     <% platforms.forEach(function(p) { %>
                         <% p.accept.forEach(function(ext) { %>
                             <li><%= p.name %> (<%= ext %>)</li>
-                        <% }); %>
-                    <% }); %>
+                        <% }) %>
+                    <% }) %>
                 </ul>
             </details>
 
             <h1>Add information</h1>
+
             <label for="projectName">Project Name:</label>
             <input type="text" id="projectName" name="projectName" required>
             <br>
+
             <label>Project Platform:</label>
             <span id="projectPlatform"></span>
             <br>
+
             <label for="projectDescription">Project Notes:</label>
-            <textarea id="projectDescription" name="projectDescription" rows="4" cols="50"></textarea>
+            <textarea id="projectDescription" name="projectDescription" rows="4"></textarea>
             <br>
+
             <button type="submit">Upload</button>
         </form>
     </div>
+</div>
+
+<div id="errorPopup">
+    <strong>Upload failed</strong>
+    <div id="errorPopupMessage" style="margin-top:0.5rem"></div>
 </div>
 
 <script>
 document.getElementById("uploadform").style.display = "block";
 document.getElementById("hidethisonload").style.display = "none";
 
+const form = document.querySelector(".upload-form");
 const fileInput = document.querySelector(".file-input");
 const langIdInput = document.getElementById("langId");
 const projectNameInput = document.getElementById("projectName");
 const projectPlatformSpan = document.getElementById("projectPlatform");
 const fileDropZone = document.querySelector(".file-drop-zone");
 
-// Map of extension -> platform id & name
+const errorPopup = document.getElementById("errorPopup");
+const errorPopupMessage = document.getElementById("errorPopupMessage");
+
+// -------- error popup --------
+function showError(message) {
+    errorPopupMessage.textContent = message;
+    errorPopup.style.display = "block";
+    setTimeout(() => errorPopup.style.display = "none", 6000);
+}
+
+// -------- extension map --------
 const extensionMap = {
     <% platforms.forEach(function(p) { %>
         <% p.accept.forEach(function(ext) { %>
             "<%= ext.replace('.', '') %>": { id: "<%= p.id %>", name: "<%= p.name %>" },
-        <% }); %>
-    <% }); %>
+        <% }) %>
+    <% }) %>
 };
 
-const allExtensions = Object.keys(extensionMap).map(ext => "." + ext).join(", ");
-fileInput.setAttribute("accept", allExtensions);
+fileInput.setAttribute(
+    "accept",
+    Object.keys(extensionMap).map(e => "." + e).join(", ")
+);
 
+// -------- file handling --------
 function handleFile(file) {
-    const fullName = file.name;
-    const nameWithoutExt = fullName.replace(/\.[^/.]+$/, "");
-    const ext = fullName.split(".").pop().toLowerCase();
+    const name = file.name.replace(/\.[^/.]+$/, "");
+    const ext = file.name.split(".").pop().toLowerCase();
 
-    projectNameInput.value = nameWithoutExt;
+    projectNameInput.value = name;
 
-    const platformInfo = extensionMap[ext];
-    if (platformInfo) {
-        langIdInput.value = platformInfo.id;
-        projectPlatformSpan.textContent = platformInfo.name;
+    const info = extensionMap[ext];
+    if (info) {
+        langIdInput.value = info.id;
+        projectPlatformSpan.textContent = info.name;
     } else {
         langIdInput.value = "";
         projectPlatformSpan.textContent = "Unknown";
     }
 }
 
-// Normal file selection
 fileInput.addEventListener("change", () => {
-    if (fileInput.files.length > 0) handleFile(fileInput.files[0]);
+    if (fileInput.files.length) handleFile(fileInput.files[0]);
 });
 
-// Drag & drop support
+// -------- drag & drop --------
 fileDropZone.addEventListener("dragover", e => {
     e.preventDefault();
     fileDropZone.classList.add("dragover");
@@ -156,10 +192,40 @@ fileDropZone.addEventListener("drop", e => {
     e.preventDefault();
     fileDropZone.classList.remove("dragover");
 
-    if (e.dataTransfer.files.length > 0) {
-        const file = e.dataTransfer.files[0];
-        fileInput.files = e.dataTransfer.files; // update file input for form submission
-        handleFile(file);
+    if (e.dataTransfer.files.length) {
+        fileInput.files = e.dataTransfer.files;
+        handleFile(e.dataTransfer.files[0]);
+    }
+});
+
+// -------- AJAX submit --------
+form.addEventListener("submit", async e => {
+    e.preventDefault();
+
+    if (!fileInput.files.length) {
+        showError("Please select a file to upload.");
+        return;
+    }
+
+    const formData = new FormData(form);
+
+    try {
+        const res = await fetch(form.action, {
+            method: "POST",
+            body: formData
+        });
+
+        const data = await res.json();
+
+        if (!res.ok || !data.success) {
+            throw new Error(data.error || "Upload failed");
+        }
+
+        window.location.href = `/projects/${data.id}`;
+
+    } catch (err) {
+        console.error(err);
+        showError(err.message || "Unexpected upload error");
     }
 });
 </script>

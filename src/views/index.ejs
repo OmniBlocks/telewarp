@@ -1,3 +1,22 @@
 <div class="hero">
-    <h1>TeleWarp</h1>
+    <h1>TeleWarp Projects</h1>
+</div>
+
+<div class="page">
+    <% if (projects && projects.length > 0) { %>
+        <ul>
+        <% projects.forEach(p => { %>
+            <li>
+                <a href="/projects/<%= p.id %>">
+                    <strong><%= p.name %></strong>
+                </a>
+                <% if (p.description) { %>
+                    - <%= p.description %>
+                <% } %>
+            </li>
+        <% }); %>
+        </ul>
+    <% } else { %>
+        <p>No projects found.</p>
+    <% } %>
 </div>

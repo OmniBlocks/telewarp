@@ -1,0 +1,30 @@
+<div class="hero">
+  <h1>
+    <%= project ? project.name : "Error" %>
+  </h1>
+</div>
+
+<div class="page">
+  <% if (error) { %>
+    <p>Failed to get project information. This has been automatically logged.</p>
+  <% } else { %>
+    <p><strong>Platform:</strong> <%= project.lang_id %></p>
+
+    <% if (project.description) { %>
+      <p><%= project.description %></p>
+    <% } %>
+
+    <% if (project.files && project.files.length) { %>
+      <p>Files:</p>
+      <ul>
+        <% project.files.forEach(file => { %>
+          <li>
+            <a href="/telewarp-projects/<%= project.id %>/<%= file.name %>" download>
+              <%= file.name %>
+            </a>
+          </li>
+        <% }) %>
+      </ul>
+    <% } %>
+  <% } %>
+</div>
