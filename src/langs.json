@@ -2,16 +2,19 @@
     {
         "id": "tw",
         "name": "TurboWarp",
-        "url": "https://turbowarp.org"
+        "url": "https://turbowarp.org",
+        "accept": [".sb3"]
+    },
+    {
+        "id": "amp",
+        "name": "AmpMod",
+        "url": "https://ampmod.codeberg.page",
+        "accept": [".apz"]
     },
     {
         "id": "ob",
         "name": "OmniBlocks (Visual IDE)",
-        "url": "https://omniblocks.github.io"
-    },
-    {
-        "id": "amp",
-        "name": "AmpMod (you should use their upcoming site instead when that's live)",
-        "url": "https://ampmod.codeberg.page"
+        "url": "https://omniblocks.github.io",
+        "accept": [".omb"]
     }
 ]

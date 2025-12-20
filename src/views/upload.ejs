@@ -1,0 +1,165 @@
+<style>
+/* Drag & drop area */
+.file-drop-zone {
+    position: relative;
+    border: 2px dashed #bbb;
+    border-radius: 8px;
+    padding: 2rem;
+    text-align: center;
+    margin-bottom: 1rem;
+    transition: border-color 0.3s, background-color 0.3s;
+    cursor: pointer;
+    background-color: var(--background);
+}
+
+.file-drop-zone.dragover {
+    border-color: #007bff;
+}
+
+/* Text inside drag & drop */
+.file-drop-text {
+    color: #666;
+    font-style: italic;
+    pointer-events: none;
+}
+
+/* Style file input invisibly to allow drag-drop click */
+.file-input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+/* Platform span styling */
+#projectPlatform {
+    font-weight: bold;
+    color: #007bff;
+}
+
+/* Submit button slight enhancement */
+button[type="submit"] {
+    padding: 0.6rem 1.2rem;
+    font-size: 1rem;
+    border-radius: 6px;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+button[type="submit"]:hover {
+    background-color: #0056b3;
+}
+</style>
+
+<div class="hero">
+    <h1>Upload project</h1>
+</div>
+<div class="page">
+    <p id="hidethisonload">Loading... Make sure to enable JavaScript if you haven't already.</p>
+    <div style="display: none;" id="uploadform">
+        <h1>Upload file</h1>
+        <form action="/upload" method="post" enctype="multipart/form-data" class="upload-form">
+            <input type="text" name="langId" hidden readonly id="langId">
+            <div class="file-drop-zone">
+                <input type="file" name="projectFile" accept="" class="file-input">
+                <p class="file-drop-text">Drag & drop a file here or click to select</p>
+            </div>
+
+            <!-- Show supported extensions -->
+            <details>
+                <summary>Supported programming languages</summary>
+                <ul>
+                    <% platforms.forEach(function(p) { %>
+                        <% p.accept.forEach(function(ext) { %>
+                            <li><%= p.name %> (<%= ext %>)</li>
+                        <% }); %>
+                    <% }); %>
+                </ul>
+            </details>
+
+            <h1>Add information</h1>
+            <label for="projectName">Project Name:</label>
+            <input type="text" id="projectName" name="projectName" required>
+            <br>
+            <label>Project Platform:</label>
+            <span id="projectPlatform"></span>
+            <br>
+            <label for="projectDescription">Project Notes:</label>
+            <textarea id="projectDescription" name="projectDescription" rows="4" cols="50"></textarea>
+            <br>
+            <button type="submit">Upload</button>
+        </form>
+    </div>
+</div>
+
+<script>
+document.getElementById("uploadform").style.display = "block";
+document.getElementById("hidethisonload").style.display = "none";
+
+const fileInput = document.querySelector(".file-input");
+const langIdInput = document.getElementById("langId");
+const projectNameInput = document.getElementById("projectName");
+const projectPlatformSpan = document.getElementById("projectPlatform");
+const fileDropZone = document.querySelector(".file-drop-zone");
+
+// Map of extension -> platform id & name
+const extensionMap = {
+    <% platforms.forEach(function(p) { %>
+        <% p.accept.forEach(function(ext) { %>
+            "<%= ext.replace('.', '') %>": { id: "<%= p.id %>", name: "<%= p.name %>" },
+        <% }); %>
+    <% }); %>
+};
+
+const allExtensions = Object.keys(extensionMap).map(ext => "." + ext).join(", ");
+fileInput.setAttribute("accept", allExtensions);
+
+function handleFile(file) {
+    const fullName = file.name;
+    const nameWithoutExt = fullName.replace(/\.[^/.]+$/, "");
+    const ext = fullName.split(".").pop().toLowerCase();
+
+    projectNameInput.value = nameWithoutExt;
+
+    const platformInfo = extensionMap[ext];
+    if (platformInfo) {
+        langIdInput.value = platformInfo.id;
+        projectPlatformSpan.textContent = platformInfo.name;
+    } else {
+        langIdInput.value = "";
+        projectPlatformSpan.textContent = "Unknown";
+    }
+}
+
+// Normal file selection
+fileInput.addEventListener("change", () => {
+    if (fileInput.files.length > 0) handleFile(fileInput.files[0]);
+});
+
+// Drag & drop support
+fileDropZone.addEventListener("dragover", e => {
+    e.preventDefault();
+    fileDropZone.classList.add("dragover");
+});
+
+fileDropZone.addEventListener("dragleave", () => {
+    fileDropZone.classList.remove("dragover");
+});
+
+fileDropZone.addEventListener("drop", e => {
+    e.preventDefault();
+    fileDropZone.classList.remove("dragover");
+
+    if (e.dataTransfer.files.length > 0) {
+        const file = e.dataTransfer.files[0];
+        fileInput.files = e.dataTransfer.files; // update file input for form submission
+        handleFile(file);
+    }
+});
+</script>

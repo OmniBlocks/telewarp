@@ -22,7 +22,7 @@
     --text-color: #121212;
     --black-transparent: rgba(0, 0, 0, 0.1);
     --black-transparent-original: rgba(0, 0, 0, 0.1);
-    --menu-bar: #336f8b;
+    --menu-bar: #855cd6;
 
     /* units */
     --menu-bar-height: 3rem;
@@ -51,6 +51,7 @@ body {
     flex-direction: column;
     width: 100vw;
     height: 100%;
+    margin-top: var(--menu-bar-height);
 }
 
 main {
@@ -65,6 +66,10 @@ main {
     height: var(--menu-bar-height);
     align-items: center;
     justify-content: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
 }
 .header .link {
     height: 100%;
@@ -84,7 +89,8 @@ main {
 }
 
 .hero {
-    background-color: #336f8b;
+    background-color: rgb(103, 69, 170);
+    color: white;
     padding: 2rem;
     text-align: center;
 }

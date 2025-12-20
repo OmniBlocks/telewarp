@@ -17,6 +17,7 @@ app.set('x-powered-by', false);
 
 // Serve static files from ./static
 app.use(express.static(path.join(__dirname, "static")));
+app.use("/js", express.static(path.join(__dirname, "frontend-js")));
 
 app.use(
   "/modern-normalize.css",
@@ -39,7 +40,7 @@ app.use((req, res, next) => {
       if (fs.existsSync(mdPath)) {
         const mdContent = fs.readFileSync(mdPath, "utf8");
         const md = new MarkdownIt();
-        bodyHtml = md.render(mdContent);
+        bodyHtml = `<div class="page">${md.render(mdContent)}</div>`;
       } else {
         // === Fallback to EJS child template ===
         bodyHtml = await ejs.renderFile(
@@ -75,6 +76,13 @@ app.get("/about", (req, res) => {
 app.get("/terms", (req, res) => {
   res.renderWithLayout("terms", {
     title: "Terms of Service"
+  });
+});
+
+app.get("/upload", (req, res) => {
+  res.renderWithLayout("upload", {
+    title: "Upload - TeleWarp",
+    platforms: require("./langs.json")
   });
 });
 
