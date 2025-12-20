@@ -1,3 +1,7 @@
+<%
+const platform =
+      platforms.find(p => p.id === project.lang_id) || null;
+%>
 <style>
   /* ===== Layout only additions ===== */
 
@@ -246,9 +250,6 @@
 <div class="project-page">
   <% if (!error) { %>
   <%
-    const platform =
-      platforms.find(p => p.id === project.lang_id) || null;
-
     const editLink = platform
       ? platform.edit
       : null;
@@ -329,7 +330,10 @@
 </div>
 
 <% if (!error) { %>
-<script src="/scaffolding.js" defer></script>
+<script 
+  src="/<%= platform && platform.id === 'ob' ? 'scaffolding-ob.js' : 'scaffolding.js' %>" 
+  defer
+></script>
 <script>
 document.addEventListener("DOMContentLoaded", async () => {
   const editLink = document.getElementById("editLink");
