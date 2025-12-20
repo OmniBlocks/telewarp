@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@turbowarp/scaffolding':
+        specifier: ^0.3.0
+        version: 0.3.0
       adm-zip:
         specifier: ^0.5.16
         version: 0.5.16
@@ -32,6 +35,9 @@ importers:
       markdown-it:
         specifier: ^14.1.0
         version: 14.1.0
+      mime:
+        specifier: ^3.0.0
+        version: 3.0.0
       modern-normalize:
         specifier: ^3.0.1
         version: 3.0.1
@@ -47,6 +53,9 @@ importers:
         version: 3.1.11
 
 packages:
+
+  '@turbowarp/scaffolding@0.3.0':
+    resolution: {integrity: sha512-6uByNbh4KCeIlsX5KCztr20VLiVqJe+92d7nrmbaHJl8Tt2aT4KqSyCuYzWqbFFEUq9Ag/oecm7Ku+o+z/MWPg==}
 
   '@types/node@12.20.55':
     resolution: {integrity: sha512-J8xLz7q2OFulZ2cyGTLE1TbbZcjpno7FaN6zdJNrgAdrJ+DZzh/uFR6YrTb4C+nXakvud8Q4+rbhoIWlYQbUFQ==}
@@ -427,6 +436,11 @@ packages:
     resolution: {integrity: sha512-Lbgzdk0h4juoQ9fCKXW4by0UJqj+nOOrI9MJ1sSj4nI8aI2eo1qmvQEie4VD1glsS250n15LsWsYtCugiStS5A==}
     engines: {node: '>=18'}
 
+  mime@3.0.0:
+    resolution: {integrity: sha512-jSCU7/VB1loIWBZe14aEYHU/+1UMEHoaO7qxCOVJOw9GgH72VAWppxNcjU+x9a2k3GSIBXNKxXQFqRvvZ7vr3A==}
+    engines: {node: '>=10.0.0'}
+    hasBin: true
+
   mimic-response@3.1.0:
     resolution: {integrity: sha512-z0yWI+4FDrrweS8Zmt4Ej5HdJmky15+L2e6Wgn3+iK5fWzb6T3fhNFq2+MeTRb064c6Wr4N/wv0DzQTjNzHNGQ==}
     engines: {node: '>=10'}
@@ -698,6 +712,8 @@ packages:
     engines: {node: '>=0.4'}
 
 snapshots:
+
+  '@turbowarp/scaffolding@0.3.0': {}
 
   '@types/node@12.20.55': {}
 
@@ -1092,6 +1108,8 @@ snapshots:
   mime-types@3.0.2:
     dependencies:
       mime-db: 1.54.0
+
+  mime@3.0.0: {}
 
   mimic-response@3.1.0: {}
 

@@ -8,6 +8,7 @@ const { ClassicLevel } = require("classic-level");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+
 /* =========================
    DATABASE (GLOBAL, OPEN ONCE)
    ========================= */
@@ -77,15 +78,6 @@ app.use((req, res, next) => {
 
   next();
 });
-
-/* =========================
-   STATIC DEP
-   ========================= */
-
-app.use(
-  "/styles/modern-normalize.css",
-  express.static(require.resolve("modern-normalize/modern-normalize.css"))
-);
 
 /* =========================
    VIEW ROUTES LOADER
@@ -180,6 +172,14 @@ const walkApi = (dir, baseRoute = "") => {
       try {
         delete require.cache[require.resolve(fullPath)];
         const handler = require(fullPath);
+        res.setHeader("Access-Control-Allow-Origin", "*");
+        res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+        res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+        // Handle preflight
+        if (req.method === "OPTIONS") {
+          return res.sendStatus(200);
+        }
 
         if (typeof handler === "function") {
           await handler(req, res, db, __dirname);
@@ -207,11 +207,10 @@ const mimeTypes = {
   ".svg": "image/svg+xml",
 };
 
-app.get("/dep/:module", (req, res) => {
+app.get(/^\/dep\/(.+)$/, (req, res) => {
+  const modulePath = req.params[0]; // everything after /dep/
   try {
-    const resolved = require.resolve(req.params.module, {
-      paths: [__dirname],
-    });
+    const resolved = require.resolve(modulePath, { paths: [__dirname] });
     res.type(mimeTypes[path.extname(resolved)] || "application/octet-stream");
     res.send(fs.readFileSync(resolved));
   } catch {

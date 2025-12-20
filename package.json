@@ -13,6 +13,7 @@
   "license": "GPL-3.0",
   "packageManager": "pnpm@10.26.1+sha512.664074abc367d2c9324fdc18037097ce0a8f126034160f709928e9e9f95d98714347044e5c3164d65bd5da6c59c6be362b107546292a8eecb7999196e5ce58fa",
   "dependencies": {
+    "@turbowarp/scaffolding": "^0.3.0",
     "adm-zip": "^0.5.16",
     "bad-words": "^4.0.0",
     "better-sqlite3": "^12.5.0",
@@ -21,6 +22,7 @@
     "express": "^5.2.1",
     "leo-profanity": "^1.8.0",
     "markdown-it": "^14.1.0",
+    "mime": "^3.0.0",
     "modern-normalize": "^3.0.1",
     "multer": "^2.0.2",
     "profanease": "^1.1.2"

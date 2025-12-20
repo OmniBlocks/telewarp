@@ -7,6 +7,7 @@ module.exports = async function(params, _req, db) {
       project,
       title: (project.name || "Project") + " on TeleWarp",
       error: false,
+      platforms: require("../../langs.json")
     };
   } catch (e) {
     console.error(`Failed to load project ${projectId}:`, e.message);

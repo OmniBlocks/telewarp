@@ -3,12 +3,14 @@
         "id": "tw",
         "name": "TurboWarp",
         "url": "https://turbowarp.org",
-        "accept": [".sb3"]
+        "accept": [".sb3"],
+        "edit": "https://turbowarp.org/editor?project_url={url}"
     },
     {
         "id": "ob",
         "name": "OmniBlocks (Visual IDE)",
         "url": "https://omniblocks.github.io",
-        "accept": [".omb"]
+        "accept": [".omb"],
+        "edit": "https://omniblocks.github.io/editor.html?project_url={url}"
     }
 ]

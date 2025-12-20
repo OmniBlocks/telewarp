@@ -8,23 +8,164 @@
   <% if (error) { %>
     <p>Failed to get project information. This has been automatically logged.</p>
   <% } else { %>
-    <p><strong>Platform:</strong> <%= project.lang_id %></p>
 
+    <!-- Controls above project -->
+    <div id="projectControls" style="margin-bottom: 10px;">
+      <button id="greenFlagBtn">🟢 Green Flag</button>
+      <button id="stopBtn">⏹ Stop</button>
+      <button id="fullscreenBtn">⛶ Fullscreen</button>
+    </div>
+
+    <div id="projectWrapper" style="position:relative; width:480px; height:360px;">
+      <div id="project" style="width:100%; height:100%;"></div>
+
+      <!-- Loading overlay -->
+      <div id="loadingOverlay" style="
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #59c059;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        z-index: 10000;
+      ">
+        <p style="color:white; font-size:16px; margin-bottom:10px;" id="progressText">Loading project data...</p>
+      </div>
+
+      <!-- Green flag overlay -->
+      <div id="greenFlagOverlay" style="
+        position: absolute;
+        top:0;
+        left:0;
+        width:100%;
+        height:100%;
+        display:flex;  /* show immediately */
+        align-items:center;
+        justify-content:center;
+        z-index:9000;
+        cursor:pointer;
+        background: #00000055;
+      ">
+        <img src="/images/flag.svg" alt="Green Flag" style="width:64px; height:64px;">
+      </div>
+    </div>
+
+    <% 
+      const platform = platforms.find(p => p.id === project.lang_id);
+      if (platform) { 
+        // Construct project URL relative to the current host
+        const editLink = platform.edit.replace("{url}", '');
+    %>
+      <a href="<%= editLink %>" target="_blank" id="editLink">Edit</a>
+    <% } else { %>
+      Unknown
+    <% } %>
+  </p>
+
+    <p><strong>Platform:</strong> 
+      <% 
+        if (platform) { 
+      %>
+        <a href="<%= platform.url %>" target="_blank"><%= platform.name %></a>
+      <% } else { %>
+        Unknown
+      <% } %>
+    </p>
     <% if (project.description) { %>
       <p><%= project.description %></p>
     <% } %>
-
-    <% if (project.files && project.files.length) { %>
-      <p>Files:</p>
-      <ul>
-        <% project.files.forEach(file => { %>
-          <li>
-            <a href="/telewarp-projects/<%= project.id %>/<%= file.name %>" download>
-              <%= file.name %>
-            </a>
-          </li>
-        <% }) %>
-      </ul>
-    <% } %>
   <% } %>
 </div>
+
+<% if (!error) { %>
+<script src="/scaffolding.js" defer></script>
+<script>
+const editLink = document.getElementById("editLink");
+if (editLink) {
+  editLink.href += window.location.origin + `/api/sb3?id=<%= project.id %>`;
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+  if (typeof Scaffolding === "undefined") {
+    console.error("Scaffolding library not loaded yet!");
+    return;
+  }
+
+  const scaffolding = new Scaffolding.Scaffolding();
+  scaffolding.usePackagedRuntime = true;
+  scaffolding.setup();
+  scaffolding.appendTo(document.getElementById('project'));
+  window.vm = scaffolding.vm;
+
+  const overlay = document.getElementById("loadingOverlay");
+  const progressText = document.getElementById("progressText");
+  const greenFlagOverlay = document.getElementById("greenFlagOverlay");
+  const apiRoot = window.location.origin; // automatically include protocol + domain
+  // ---------------- Asset loader with retry ----------------
+  const RETRY_DELAY = 500; // ms
+
+  const storage = scaffolding.storage;
+  storage.addWebStore(
+    [storage.AssetType.ImageVector, storage.AssetType.ImageBitmap, storage.AssetType.Sound],
+    (asset) => `${apiRoot}/api/asset?id=${asset.assetId}.${asset.dataFormat}`
+  );
+  storage.onprogress = (total, loaded) => {
+    progressText.innerText = `Loading asset... (${loaded} / ${total})`;
+  };
+
+  scaffolding.setExtensionSecurityManager({
+    getSandboxMode: (url) => {
+      if (url.startsWith('https://extensions.turbowarp.org/')) return 'unsandboxed';
+      return 'iframe';
+    },
+    canLoadExtensionFromProject: (url) => {
+      return url.startsWith('https://extensions.turbowarp.org/') || confirm(`This project wants to load an extension from ${url}. Allow?`);
+    }
+  });
+
+  try {
+    const projectId = "<%= project.id %>";
+    const res = await fetch(`${apiRoot}/api/project?id=${projectId}`);
+    const projectData = await res.json();
+
+    await scaffolding.loadProject(projectData);
+    overlay.style.display = "none"; // hide loading overlay after loading
+
+    progressText.textContent = ""; // clear progress text
+    greenFlagOverlay.style.display = "flex"; // keep green flag overlay visible until clicked
+  } catch (e) {
+    console.error("Failed to load project:", e);
+    progressText.textContent = "Failed to load project";
+  }
+
+  // ---------------- Green flag logic ----------------
+  function triggerGreenFlag() {
+    scaffolding.greenFlag();
+    greenFlagOverlay.style.display = "none"; // hide overlay after click
+    overlay.style.display = "none";
+  }
+
+  greenFlagOverlay.addEventListener("click", triggerGreenFlag);
+  document.getElementById("greenFlagBtn").addEventListener("click", triggerGreenFlag);
+
+  // ---------------- Stop and Fullscreen ----------------
+  document.getElementById("stopBtn").addEventListener("click", () => {
+    scaffolding.stopAll();
+  });
+
+  document.getElementById("fullscreenBtn").addEventListener("click", () => {
+    const wrapper = document.getElementById("projectWrapper");
+    if (!document.fullscreenElement) {
+      wrapper.requestFullscreen();
+    } else {
+      document.exitFullscreen();
+    }
+  });
+
+});
+</script>
+<% } %>

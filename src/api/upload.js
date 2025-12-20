@@ -1,15 +1,17 @@
 const path = require("path");
 const fs = require("fs/promises");
+const fsSync = require("fs");
 const multer = require("multer");
 const AdmZip = require("adm-zip");
+const crypto = require("crypto");
 
 const LANGS_FILE = path.join(__dirname, "../langs.json");
 const COUNTER_KEY = "project_counter";
-const LAST_PROJECTS_KEY = "projects:recent"; // track last 20 projects
+const LAST_PROJECTS_KEY = "projects:recent";
 
-const Profanease = require('profanease');
-const filter = new Profanease({lang : 'all'});
-filter.addWords(['automodmute']);
+const Profanease = require("profanease");
+const filter = new Profanease({ lang: "all" });
+filter.addWords(["automodmute"]);
 
 module.exports = async (req, res, db, dirname) => {
   const tmpDir = path.join(dirname, "tmp");
@@ -48,68 +50,67 @@ module.exports = async (req, res, db, dirname) => {
   try {
     await handleUpload();
 
-    if (!req.file) {
-      return res.status(400).json({ error: "No file uploaded" });
-    }
+    if (!req.file) return res.status(400).json({ error: "No file uploaded" });
 
     const zip = new AdmZip(req.file.path);
     const entries = zip.getEntries();
 
     let projectJson = null;
-    let projectJsonSize = 0;
     let totalAssetsSize = 0;
+
     const filesToWrite = [];
-
     for (const entry of entries) {
-      if (entry.isDirectory) continue;
+    if (entry.isDirectory) continue;
 
-      const name = path.basename(entry.entryName);
-      const data = entry.getData();
-      const size = data.length;
+    const data = entry.getData();
+    const size = data.length;
+    const name = path.basename(entry.entryName); // keep original filename
 
-      if (name === "project.json") {
-        projectJsonSize = size;
-        if (projectJsonSize > 10 * 1024 * 1024)
-          throw new Error("project.json exceeds 10MB limit");
+    if (name === "project.json") {
+        if (size > 10 * 1024 * 1024) 
+        throw new Error("project.json exceeds 10MB limit");
         projectJson = JSON.parse(data.toString("utf8"));
-      } else {
-        totalAssetsSize += size;
-        if (totalAssetsSize > 5 * 1024 * 1024)
-          throw new Error("Assets exceed 5MB total limit");
-        filesToWrite.push({ name, data });
-      }
+        continue;
+    }
+
+    if (size > 15 * 1024 * 1024) {
+        // reject individual files >15MB
+        throw new Error(`Asset ${name} exceeds 15MB limit`);
+    }
+
+    const filePath = path.join(projectsDir, name);
+    if (!fsSync.existsSync(filePath)) {
+        await fs.writeFile(filePath, data);
+    }
+
+    filesToWrite.push({ name, size });
     }
 
     if (!projectJson) throw new Error("ZIP must contain project.json");
 
     // ---------------- validate platform ID ----------------
     const langId = req.body.langId || projectJson.lang_id;
-    if (!langId || !langs.find((l) => l.id === langId))
-      throw new Error("Invalid or missing platform ID");
+    if (!langId || !langs.find((l) => l.id === langId)) throw new Error("Invalid or missing platform ID");
 
     // ---------------- generate new project ID ----------------
     counter += 1n;
     const projectId = counter.toString();
     await db.put(COUNTER_KEY, projectId);
 
-    // ---------------- check for naughty words in project name ----------------
+    // ---------------- check for naughty words ----------------
     const projectName = req.body.projectName || "";
     if (filter.check(projectName)) {
       return res.status(400).json({ error: "Project name contains inappropriate language" });
     }
-    // ---------------- description too ----------------
-    const projectDescription = req.body.projectDescription || "";
-    let willBlankDescription = false;
-    if (filter.check(projectDescription)) {
-      willBlankDescription = true;
-    }
+
+    let projectDescription = req.body.projectDescription || "";
+    if (filter.check(projectDescription)) projectDescription = "";
 
     // ---------------- store project metadata ----------------
     const projectData = {
       id: projectId,
-      name: req.body.projectName || projectJson.name || "Untitled",
-      description: willBlankDescription ? '' :
-        req.body.projectDescription || "",
+      name: projectName || projectJson.name || "Untitled",
+      description: projectDescription,
       lang_id: langId,
       metadata: projectJson,
       created_at: Date.now(),
@@ -128,33 +129,21 @@ module.exports = async (req, res, db, dirname) => {
     }
 
     recentProjects.push(projectId);
-    if (recentProjects.length > 20) {
-      recentProjects = recentProjects.slice(-20); // keep only last 20
-    }
-
+    if (recentProjects.length > 20) recentProjects = recentProjects.slice(-20);
     await db.put(LAST_PROJECTS_KEY, recentProjects);
 
-    // ---------------- write project files ----------------
-    const projectPath = path.join(projectsDir, projectId);
-    await fs.mkdir(projectPath, { recursive: true });
-
-    for (const file of filesToWrite) {
-      await fs.writeFile(path.join(projectPath, file.name), file.data);
-    }
-
+    // ---------------- cleanup ----------------
     await fs.unlink(req.file.path);
 
     res.json({ success: true, id: projectId });
   } catch (err) {
     console.error(err);
     await fs.unlink(req.file?.path || "").catch(() => {});
-
     let message;
     if (err.message.includes("project.json")) message = "project.json must be ≤ 10MB";
     else if (err.message.includes("Assets")) message = "Assets must be ≤ 5MB total";
     else if (err.message.includes("platform")) message = "Invalid platform ID";
     else message = "Upload processing failed";
-
     res.status(400).json({ error: message });
   }
 };
