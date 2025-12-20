@@ -1,4 +1,17 @@
 [
-  {"name": "TurboWarp", "id": "tw"},
-  {"name": "OmniBlocks Scratch", "id": "ob"}
+    {
+        "id": "tw",
+        "name": "TurboWarp",
+        "url": "https://turbowarp.org"
+    },
+    {
+        "id": "ob",
+        "name": "OmniBlocks (Visual IDE)",
+        "url": "https://omniblocks.github.io"
+    },
+    {
+        "id": "amp",
+        "name": "AmpMod (you should use their upcoming site instead when that's live)",
+        "url": "https://ampmod.codeberg.page"
+    }
 ]
