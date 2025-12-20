@@ -93,13 +93,16 @@ const platform =
   }
 
   #loadingOverlay {
-    background-color: #855cd6;
+    background-color: <%- platform.accent %>;
+    color: white;
+    display: flex;
     flex-direction: column;
+    gap: 4px;
     z-index: 10000;
   }
 
   #progressContainer {
-    width: 320px;
+    width: 250px;
     height: 8px;
     overflow: hidden;
     border-radius: 9999em;
@@ -160,7 +163,7 @@ const platform =
   }
 
   .btn-primary {
-    background: #855cd6;
+    background: <%- platform.accent %>;
     color: white;
     border: none;
   }
@@ -195,7 +198,7 @@ const platform =
   .modal-header {
     padding: 12px 16px;
     font-weight: bold;
-    background: #855cd6;
+    background: <%- platform.accent %>;
     color: white;
   }
 
@@ -237,7 +240,7 @@ const platform =
     font-weight: bold;
     text-decoration: none;
     color: white;
-    background: #855cd6;
+    background: <%- platform.accent %>;
     padding: 8px;
     border-radius: 4px;
   }
@@ -245,6 +248,131 @@ const platform =
   .description {
     white-space: pre-wrap;
   }
+
+@keyframes top-slide-in {
+    0% {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+
+    33% {
+        transform: translateY(0px);
+        opacity: 1;
+    }
+}
+
+@keyframes middle-slide-in {
+    0% {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+
+    33% {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+
+    66% {
+        transform: translateY(0px);
+        opacity: 1;
+    }
+}
+
+@keyframes bottom-slide-in {
+    0% {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+
+    66% {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+
+    100% {
+        transform: translateY(0px);
+        opacity: 1;
+    }
+}
+
+@keyframes top-slide-in-rtl {
+    0% {
+        transform: translateY(50px) scaleX(-1);
+        opacity: 0;
+    }
+
+    33% {
+        transform: translateY(0px) scaleX(-1);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(0px) scaleX(-1);
+        opacity: 1;
+    }
+}
+
+@keyframes middle-slide-in-rtl {
+    0% {
+        transform: translateY(50px) scaleX(-1);
+        opacity: 0;
+    }
+
+    33% {
+        transform: translateY(50px) scaleX(-1);
+        opacity: 0;
+    }
+
+    66% {
+        transform: translateY(0px) scaleX(-1);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(0px) scaleX(-1);
+        opacity: 1;
+    }
+}
+
+@keyframes bottom-slide-in-rtl {
+    0% {
+        transform: translateY(50px) scaleX(-1);
+        opacity: 0;
+    }
+
+    66% {
+        transform: translateY(50px) scaleX(-1);
+        opacity: 0;
+    }
+
+    100% {
+        transform: translateY(0px) scaleX(-1);
+        opacity: 1;
+    }
+}
+
+.top-block {
+    animation: top-slide-in 1.5s ease infinite;
+}
+
+.middle-block {
+    animation: middle-slide-in 1.5s ease infinite;
+}
+
+.bottom-block {
+    animation: bottom-slide-in 1.5s ease infinite;
+}
+
+.block-animation {
+    width: 125px;
+    height: 150px;
+    margin: 50px auto 0px;
+}
+
+.block-animation img {
+    display: block;
+    position: relative;
+    height: 30%;
+    margin-top: -4px;
+}
 </style>
 
 <div class="project-page">
@@ -283,6 +411,13 @@ const platform =
       <div id="projectWrapper">
         <div id="project"></div>
         <div id="loadingOverlay" class="overlay-base">
+          <div class="block-animation">
+            <img src="/images/top-block.svg" class="top-block">
+            <img src="/images/middle-block.svg" class="middle-block">
+            <img src="/images/bottom-block.svg" class="bottom-block">
+          </div>
+          <h2 style="margin: 0;">Loading Project</h2>
+          <p id="progressText" style="margin: 0;">Loading project...</p>
           <div id="progressContainer"><div id="progressBar"></div></div>
         </div>
         <div id="greenFlagOverlay" class="overlay-base">
@@ -357,6 +492,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const extensionCodeEl = document.getElementById("extensionCode");
   const unsandboxCheckbox = document.getElementById("unsandboxCheckbox");
   const unsandboxWarning = document.getElementById("unsandboxWarning");
+  const progressText = document.getElementById("progressText");
   const apiRoot = window.location.origin;
 
   const storage = scaffolding.storage;
@@ -393,6 +529,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   vm.on('ASSET_PROGRESS', (finished, total) => {
     const percent = total > 0 ? (finished / total) * 100 : 0;
     progressBar.style.width = `${percent}%`;
+    progressText.innerText = `Downloading assets (${finished} / ${total})...`;
   });
 
   let userChosenSandboxMode = 'iframe';

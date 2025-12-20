@@ -4,13 +4,15 @@
         "name": "TurboWarp",
         "url": "https://turbowarp.org",
         "accept": [".sb3"],
-        "edit": "https://turbowarp.org/editor?project_url={url}"
+        "edit": "https://turbowarp.org/editor?project_url={url}",
+        "accent": "#ff4c4c"
     },
     {
         "id": "ob",
         "name": "OmniBlocks (Visual IDE)",
         "url": "https://omniblocks.github.io",
         "accept": [".omb"],
-        "edit": "https://omniblocks.github.io/editor.html?project_url={url}"
+        "edit": "https://omniblocks.github.io/editor.html?project_url={url}",
+        "accent": "#59c0c0"
     }
 ]
