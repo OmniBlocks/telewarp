@@ -7,6 +7,10 @@ const LANGS_FILE = path.join(__dirname, "../langs.json");
 const COUNTER_KEY = "project_counter";
 const LAST_PROJECTS_KEY = "projects:recent"; // track last 20 projects
 
+const Profanease = require('profanease');
+const filter = new Profanease({lang : 'all'});
+filter.addWords(['automodmute']);
+
 module.exports = async (req, res, db, dirname) => {
   const tmpDir = path.join(dirname, "tmp");
   const projectsDir = path.join(dirname, "telewarp-projects");
@@ -88,11 +92,24 @@ module.exports = async (req, res, db, dirname) => {
     const projectId = counter.toString();
     await db.put(COUNTER_KEY, projectId);
 
+    // ---------------- check for naughty words in project name ----------------
+    const projectName = req.body.projectName || "";
+    if (filter.check(projectName)) {
+      return res.status(400).json({ error: "Project name contains inappropriate language" });
+    }
+    // ---------------- description too ----------------
+    const projectDescription = req.body.projectDescription || "";
+    let willBlankDescription = false;
+    if (filter.check(projectDescription)) {
+      willBlankDescription = true;
+    }
+
     // ---------------- store project metadata ----------------
     const projectData = {
       id: projectId,
       name: req.body.projectName || projectJson.name || "Untitled",
-      description: req.body.projectDescription || "",
+      description: willBlankDescription ? '' :
+        req.body.projectDescription || "",
       lang_id: langId,
       metadata: projectJson,
       created_at: Date.now(),
