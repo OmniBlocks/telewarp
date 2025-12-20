@@ -6,12 +6,6 @@
         "accept": [".sb3"]
     },
     {
-        "id": "amp",
-        "name": "AmpMod",
-        "url": "https://ampmod.codeberg.page",
-        "accept": [".apz"]
-    },
-    {
         "id": "ob",
         "name": "OmniBlocks (Visual IDE)",
         "url": "https://omniblocks.github.io",
