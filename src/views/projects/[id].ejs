@@ -538,9 +538,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   let userChosenSandboxMode = 'iframe';
 
   scaffolding.setExtensionSecurityManager({
-    getSandboxMode: (url) => url.startsWith("https://extensions.turbowarp.org/") ? 'unsandboxed' : userChosenSandboxMode,
+    getSandboxMode: (url) =>
+    url.startsWith("https://extensions.turbowarp.org/") ? 'unsandboxed' :
+    url.startsWith("https://omniblocks.github.io/extensions/") ? 'unsandboxed' :
+      userChosenSandboxMode,
     canLoadExtensionFromProject: async (url) => {
       if (url.startsWith("https://extensions.turbowarp.org/")) return true;
+      if (url.startsWith("https://omniblocks.github.io/extensions/")) return true;
 
       securityModal.style.display = "flex";
       extensionCodeEl.textContent = "Loading code...";
