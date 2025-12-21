@@ -127,8 +127,12 @@ function walkViews(dir, baseRoute = '') {
     const serverFile = path.join(fullPath, 'page.server.js')
     const scssFile = path.join(fullPath, 'page.scss')
 
-    // ✅ Register route ONLY if page exists
-    if (fs.existsSync(ejsFile) || fs.existsSync(serverFile)) {
+    // ✅ Register route if page exists (ejs, server, or markdown)
+    if (
+      fs.existsSync(ejsFile) ||
+      fs.existsSync(serverFile) ||
+      fs.existsSync(path.join(fullPath, 'page.md'))
+    ) {
       app.get(routePath, async (req, res, next) => {
         try {
           let routeOptions = {}
@@ -140,11 +144,15 @@ function walkViews(dir, baseRoute = '') {
           }
 
           let bodyHtml = ''
+          const mdFile = path.join(fullPath, 'page.md')
           if (fs.existsSync(ejsFile)) {
             bodyHtml = await ejs.renderFile(ejsFile, {
               params: req.params,
               ...routeOptions,
             })
+          } else if (fs.existsSync(mdFile)) {
+            const md = new MarkdownIt()
+            bodyHtml = `<div class="page">${md.render(fs.readFileSync(mdFile, 'utf8'))}</div>`
           }
 
           const styleTag = compileMergedStyles(scssFile)
