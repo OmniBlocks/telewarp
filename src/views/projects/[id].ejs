@@ -173,6 +173,7 @@ const platform =
     padding: 6px 12px;
     cursor: pointer;
     font-family: inherit;
+    text-decoration: none;
   }
 
   .btn-secondary {
@@ -470,6 +471,7 @@ const platform =
           </a>
         </p>
       </div>
+      <p><button id="downloadSb3" class="btn btn-primary" download="<%= platform.name %>.<%= platform.accept[0] %>">Download</button></p>
     </div>
   </div>
   <% } %>
@@ -527,6 +529,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   const unsandboxWarning = document.getElementById("unsandboxWarning");
   const progressText = document.getElementById("progressText");
   const apiRoot = window.location.origin;
+  const PROJECT_NAME = "<%= project.name.replace(/"/g, '\\"') %>";
+  const PROJECT_EXT = "<%= platform.accept[0].replace(/"/g, '\\"') %>";
 
   const storage = scaffolding.storage;
   storage.addWebStore(
@@ -647,6 +651,31 @@ setInterval(syncWrapperWithCanvas, 100);
     scaffolding.greenFlag();
     greenFlagOverlay.style.display = "none";
   }
+  
+  document.getElementById("downloadSb3").addEventListener("click", async () => {
+    if (!window.vm) {
+      alert("VM not loaded yet!");
+      return;
+    }
+
+    try {
+      const sb3Blob = await window.vm.saveProjectSb3();
+
+      const safeName = (PROJECT_NAME || "project");
+
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(sb3Blob);
+      link.download = safeName + PROJECT_EXT;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      URL.revokeObjectURL(link.href);
+    } catch (e) {
+      console.error("Failed to export project:", e);
+      alert("Failed to download project.");
+    }
+  });
 
   greenFlagOverlay.addEventListener("click", triggerGreenFlag);
   document.getElementById("greenFlagBtn").addEventListener("click", triggerGreenFlag);
