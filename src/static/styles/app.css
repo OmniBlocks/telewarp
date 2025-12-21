@@ -163,3 +163,13 @@ a {
     max-width: 800px;
     margin: auto;
 }
+
+.news {
+    display: flex;
+    justify-content: center;
+    padding: 14px;
+    text-align: center;
+    color: white;
+    font-weight: bold;
+    background: #cc2222;
+}

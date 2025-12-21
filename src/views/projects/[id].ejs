@@ -116,7 +116,6 @@ const platform =
     width: 0%;
     height: 100%;
     background-color: white;
-    transition: width 0.2s ease;
   }
 
   #greenFlagOverlay {
@@ -129,8 +128,8 @@ const platform =
     height: 85px;
     width: 85px;
     border-radius: 50%;
-    background: #ffffffa5;
-    border: 3px #ffffffaa solid;
+    background: #ffffffaa;
+    border: 3px #ffffffcc solid;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -420,7 +419,7 @@ const platform =
             <img src="/images/bottom-block.svg" class="bottom-block">
           </div>
           <h2 style="margin: 0;">Loading Project</h2>
-          <p id="progressText" style="margin: 0;">Loading project...</p>
+          <p id="progressText" style="margin: 0;">Loading <%= platform.name %> ...</p>
           <div id="progressContainer"><div id="progressBar"></div></div>
         </div>
         <div id="greenFlagOverlay" class="overlay-base">
@@ -504,24 +503,27 @@ document.addEventListener("DOMContentLoaded", async () => {
     (asset) => `${apiRoot}/api/asset?id=${asset.assetId}.${asset.dataFormat}`
   );
 
-  const projectWrapper = document.getElementById("projectWrapper");
-  const projectControlsContainer = document.getElementById("projectControlsContainer");
-  const fixedHeight = 360;
+const projectWrapper = document.getElementById("projectWrapper");
+const projectControlsContainer = document.getElementById("projectControlsContainer");
+const fixedWidth = 480; // set whatever fixed width you want
 
-  function syncWrapperWithCanvas() {
-    const canvas = document.querySelector(".sc-canvas");
-    if (!canvas) return;
-    const aspectRatio = canvas.width / canvas.height || 4 / 3;
-    const targetWidth = fixedHeight * aspectRatio;
+function syncWrapperWithCanvas() {
+  const canvas = document.querySelector(".sc-canvas");
+  if (!canvas) return;
 
-    if (parseFloat(projectWrapper.style.width) !== targetWidth) {
-      projectWrapper.style.height = fixedHeight + "px";
-      projectWrapper.style.width = targetWidth + "px";
-      projectControlsContainer.style.width = targetWidth + "px";
-      scaffolding.relayout();
-    }
+  const aspectRatio = canvas.width / canvas.height || 4 / 3;
+  const targetHeight = fixedWidth / aspectRatio;
+
+  // Only update if the height has changed
+  if (parseFloat(projectWrapper.style.height) !== targetHeight) {
+    projectWrapper.style.width = fixedWidth + "px";
+    projectWrapper.style.height = targetHeight + "px";
+    projectControlsContainer.style.width = fixedWidth + "px";
+    scaffolding.relayout();
   }
-  setInterval(syncWrapperWithCanvas, 100);
+}
+
+setInterval(syncWrapperWithCanvas, 100);
 
   unsandboxCheckbox.checked = true;
   unsandboxWarning.style.display = unsandboxCheckbox.checked ? "block" : "none";
@@ -532,7 +534,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   vm.on('ASSET_PROGRESS', (finished, total) => {
     const percent = total > 0 ? (finished / total) * 100 : 0;
     progressBar.style.width = `${percent}%`;
-    progressText.innerText = `Downloading assets (${finished} / ${total})...`;
+    progressText.innerText = `Downloading assets (${finished}/${total}) ...`;
   });
 
   let userChosenSandboxMode = 'iframe';
@@ -584,6 +586,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   try {
+    progressText.innerText = "Loading project data ...";
     const projectId = "<%= project.id %>";
     const res = await fetch(`${apiRoot}/api/project?id=${projectId}`);
     const projectData = await res.json();

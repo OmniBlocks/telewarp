@@ -12,7 +12,11 @@ const LAST_PROJECTS_KEY = "projects:recent";
 const Profanease = require("profanease");
 const filter = new Profanease({ lang: "en" });
 filter.addWords(["automodmute"]);
-filter.removeWords(["dang", "damn", "hell", "crap", "lmao"])
+filter.removeWords(["dang", "damn", "hell", "crap", "lmao",
+  // causes false positives
+  "button",
+  "buttons"
+])
 
 module.exports = async (req, res, db, dirname) => {
   const tmpDir = path.join(dirname, "tmp");
