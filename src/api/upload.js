@@ -13,6 +13,8 @@ const filter = new Profanease({ lang: "en" });
 filter.addWords(["automodmute"]);
 filter.removeWords(["dang", "damn", "hell", "crap", "lmao", "button", "buttons"]);
 
+let langsCache;
+
 module.exports = async (req, res, db, dirname) => {
   const tmpDir = path.join(dirname, "tmp");
   const projectsDir = path.join(dirname, "telewarp-projects");
@@ -23,7 +25,8 @@ module.exports = async (req, res, db, dirname) => {
   // ---------------- load supported languages ----------------
   let langs;
   try {
-    langs = JSON.parse(await fs.readFile(LANGS_FILE, "utf8"));
+    if (!langsCache) langsCache = JSON.parse(await fs.readFile(LANGS_FILE, "utf8"));
+    langs = langsCache;
   } catch {
     return res.status(500).json({ error: "Could not load languages file" });
   }
@@ -51,7 +54,6 @@ module.exports = async (req, res, db, dirname) => {
     });
 
   try {
-    // first process the multipart/form-data
     await handleUpload();
 
     const projectFile = req.files?.projectFile?.[0];
@@ -64,6 +66,8 @@ module.exports = async (req, res, db, dirname) => {
     const entries = zip.getEntries();
 
     let projectJson = null;
+    const writePromises = [];
+
     for (const entry of entries) {
       if (entry.isDirectory) continue;
 
@@ -80,8 +84,10 @@ module.exports = async (req, res, db, dirname) => {
       if (size > 15 * 1024 * 1024) throw new Error(`Asset ${name} exceeds 15MB limit`);
 
       const filePath = path.join(projectsDir, name);
-      if (!fsSync.existsSync(filePath)) await fs.writeFile(filePath, data);
+      // write only if file doesn't exist
+      writePromises.push(fs.writeFile(filePath, data, { flag: 'wx' }).catch(() => {}));
     }
+    await Promise.all(writePromises);
 
     if (!projectJson) throw new Error("ZIP must contain project.json");
 
@@ -107,8 +113,7 @@ module.exports = async (req, res, db, dirname) => {
       if (thumbFile.size > 2 * 1024 * 1024) return res.status(400).json({ error: "Thumbnail exceeds 2MB limit" });
       const thumbName = `thumb_${projectId}${path.extname(thumbFile.originalname)}`;
       thumbnailPath = path.join(projectsDir, thumbName);
-      await fs.writeFile(thumbnailPath, await fs.readFile(thumbFile.path));
-      await fs.unlink(thumbFile.path);
+      await fs.rename(thumbFile.path, thumbnailPath); // move instead of read/write
     }
 
     // ---------------- store project metadata ----------------
@@ -127,7 +132,12 @@ module.exports = async (req, res, db, dirname) => {
 
     // ---------------- update last 20 projects ----------------
     let recentProjects;
-    try { recentProjects = await db.get(LAST_PROJECTS_KEY); if (!Array.isArray(recentProjects)) recentProjects = []; } catch { recentProjects = []; }
+    try { 
+      recentProjects = await db.get(LAST_PROJECTS_KEY); 
+      if (!Array.isArray(recentProjects)) recentProjects = []; 
+    } catch { 
+      recentProjects = []; 
+    }
     recentProjects.push(projectId);
     if (recentProjects.length > 20) recentProjects = recentProjects.slice(-20);
     await db.put(LAST_PROJECTS_KEY, recentProjects);
