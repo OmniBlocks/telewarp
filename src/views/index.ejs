@@ -4,16 +4,78 @@
 
 <div class="page">
     <% if (projects && projects.length > 0) { %>
-        <ul>
-        <% projects.forEach(p => { %>
-            <li>
-                <a href="/projects/<%= p.id %>">
-                    <strong><%= p.name %></strong>
+        <div class="row"><h2>Recent</h2>
+        <div class="projects-row">
+            <% projects.forEach(p => { %>
+                <a href="/projects/<%= p.id %>" class="project-card">
+                    <% if (p.thumbnail) { %>
+                        <img src="/api/asset?id=thumb_<%= p.id %>.png" alt="<%= p.name %>" class="project-thumb">
+                    <% } else { %>
+                        <div class="project-thumb placeholder"></div>
+                    <% } %>
+                    <div class="project-name"><%= p.name %></div>
                 </a>
-            </li>
-        <% }); %>
-        </ul>
+            <% }); %>
+        </div>
+        </div>
     <% } else { %>
         <p>No projects found.</p>
     <% } %>
 </div>
+
+<style>
+.row {
+    border: 1px var(--black-transparent) solid;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.row h2 {
+    font-size: 1em;
+    margin: 0;
+}
+.projects-row {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+}
+
+/* Individual project cards */
+.project-card {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: var(--white);
+    border: 1px solid var(--solid-border);
+    border-radius: 8px;
+    width: 200px; /* card width */
+    text-decoration: none;
+    color: var(--text-color);
+    overflow: hidden;
+    padding: 8px;
+    gap: 8px;
+}
+
+.project-thumb {
+    width: 100%;
+    flex-grow: 1;
+    border-radius: 4px;
+    background-color: #eee;
+}
+
+.project-thumb.placeholder {
+    display: block;
+}
+
+.project-name {
+    font-size: 0.9rem;
+    width: 100%;
+    box-sizing: border-box;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+</style>

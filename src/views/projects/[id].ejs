@@ -101,7 +101,7 @@ const platform =
     display: flex;
     flex-direction: column;
     gap: 4px;
-    z-index: 10000;
+    z-index: 9000;
   }
   .dark #loadingOverlay {
     background: #333333;
@@ -122,7 +122,7 @@ const platform =
   }
 
   #greenFlagOverlay {
-    z-index: 9000;
+    z-index: 8000;
     cursor: pointer;
     background: #00000055;
   }
@@ -464,7 +464,7 @@ const platform =
           <div style="white-space: pre-wrap"><%= project.description %></div>
           <hr />
         <% } %>
-        <p style="margin: 0"><strong>Platform:</strong>
+        <p style="margin: 0"><strong>Made in: </strong>
           <a href="<%= platform.url %>" target="_blank" style="color: <%= platform.accent %>">
             <%= platform.name ?? "Unknown" %>
           </a>

@@ -1,5 +1,5 @@
 <style>
-/* Drag & drop area */
+/* ===== Drag & drop area ===== */
 .file-drop-zone {
     position: relative;
     border: 2px dashed #bbb;
@@ -16,14 +16,12 @@
     border-color: #007bff;
 }
 
-/* Text inside drag & drop */
 .file-drop-text {
     color: #666;
     font-style: italic;
     pointer-events: none;
 }
 
-/* Invisible file input */
 .file-input {
     position: absolute;
     inset: 0;
@@ -31,14 +29,12 @@
     cursor: pointer;
 }
 
-/* Platform span */
 #projectPlatform {
     font-weight: bold;
     color: #007bff;
 }
 
-/* Submit button */
-button[type="submit"] {
+button[type="submit"], #regenerateThumbnailBtn {
     padding: 0.6rem 1.2rem;
     font-size: 1rem;
     border-radius: 6px;
@@ -46,13 +42,13 @@ button[type="submit"] {
     background-color: #007bff;
     color: white;
     cursor: pointer;
+    margin-top: 0.5rem;
 }
 
-button[type="submit"]:hover {
+button[type="submit"]:hover, #regenerateThumbnailBtn:hover {
     background-color: #0056b3;
 }
 
-/* Error popup */
 #errorPopup {
     position: fixed;
     top: 20px;
@@ -67,6 +63,16 @@ button[type="submit"]:hover {
     display: none;
     z-index: 1000;
 }
+
+/* ===== Thumbnail preview ===== */
+#thumbnailPreview {
+    max-width: 100%;
+    max-height: 200px;
+    display: none;
+    margin-top: 8px;
+    border: 1px solid var(--solid-border);
+    border-radius: 4px;
+}
 </style>
 
 <div class="hero">
@@ -77,8 +83,6 @@ button[type="submit"]:hover {
     <p id="hidethisonload">Loading... Make sure to enable JavaScript if you haven't already.</p>
 
     <div id="uploadform" style="display:none">
-        <h1>Upload file</h1>
-
         <form action="/api/upload" method="post" enctype="multipart/form-data" class="upload-form">
             <input type="text" name="langId" hidden readonly id="langId">
 
@@ -98,6 +102,7 @@ button[type="submit"]:hover {
                 </ul>
             </details>
 
+            <div id="projectInfo" style="display: none">
             <h1>Add information</h1>
 
             <label for="projectName">Project Name:</label>
@@ -111,8 +116,13 @@ button[type="submit"]:hover {
             <label for="projectDescription">Project Notes:</label>
             <textarea id="projectDescription" name="projectDescription" rows="4"></textarea>
             <br>
-
-            <button type="submit">Upload</button>
+            <h2>Thumbnail</h2>
+            <p>Tip: To change the thumbnail, create a new sprite that hides when the green flag is clicked. Before saving, show that sprite.</p>
+            <div id="sc" style="top: 0; left: 0; position: fixed; width: 480px; aspect-ratio: 4/3; overflow: visible; opacity: 0; pointer-events: none;"></div>
+            <img id="thumbnailPreview" alt="Project thumbnail">
+            <p>If something's missing, click "Regenerate Thumbnail". Note that thumbnails for projects with untrusted extensions are not generated for security reasons.</p>
+            <button type="button" id="regenerateThumbnailBtn">Regenerate Thumbnail</button>
+            <br><button type="submit">Upload</button></div>
         </form>
     </div>
 </div>
@@ -122,6 +132,8 @@ button[type="submit"]:hover {
     <div id="errorPopupMessage" style="margin-top:0.5rem"></div>
 </div>
 
+<!-- use ob for omniblocks compat -->
+<script src="/scaffolding-ob.js" defer></script>
 <script>
 document.getElementById("uploadform").style.display = "block";
 document.getElementById("hidethisonload").style.display = "none";
@@ -132,9 +144,14 @@ const langIdInput = document.getElementById("langId");
 const projectNameInput = document.getElementById("projectName");
 const projectPlatformSpan = document.getElementById("projectPlatform");
 const fileDropZone = document.querySelector(".file-drop-zone");
+const thumbnailPreview = document.getElementById("thumbnailPreview");
+const regenerateBtn = document.getElementById("regenerateThumbnailBtn");
 
 const errorPopup = document.getElementById("errorPopup");
 const errorPopupMessage = document.getElementById("errorPopupMessage");
+
+let scaffolding = null;
+let capturedThumbnail = null;
 
 // -------- error popup --------
 function showError(message) {
@@ -157,8 +174,29 @@ fileInput.setAttribute(
     Object.keys(extensionMap).map(e => "." + e).join(", ")
 );
 
-// -------- file handling --------
-function handleFile(file) {
+// -------- Scaffolding setup ----------
+document.addEventListener("DOMContentLoaded", async () => {
+    if (typeof Scaffolding === "undefined") {
+        console.error("Scaffolding library not loaded yet!");
+        return;
+    }
+
+    scaffolding = new Scaffolding.Scaffolding();
+    scaffolding.usePackagedRuntime = true;
+    scaffolding.connectPeripherals = false;
+    scaffolding.resizeMode = 'dynamic-resize';
+    scaffolding.setup();
+    scaffolding.appendTo(document.querySelector('#sc'));
+
+    scaffolding.setExtensionSecurityManager({
+        getSandboxMode: () => 'unsandboxed',
+        canLoadExtensionFromProject: url => url.startsWith("https://extensions.turbowarp.org/") || url.startsWith("https://omniblocks.github.io/extensions/"),
+    });
+});
+
+// -------- file handling with project load ----------
+async function handleFile(file) {
+    document.getElementById("projectInfo").style.display = "block";
     const name = file.name.replace(/\.[^/.]+$/, "");
     const ext = file.name.split(".").pop().toLowerCase();
 
@@ -172,11 +210,20 @@ function handleFile(file) {
         langIdInput.value = "";
         projectPlatformSpan.textContent = "Unknown";
     }
-}
 
-fileInput.addEventListener("change", () => {
-    if (fileInput.files.length) handleFile(fileInput.files[0]);
-});
+    if (!scaffolding) return showError("Scaffolding not initialized.");
+
+    try {
+        const arrayBuffer = await file.arrayBuffer();
+        await scaffolding.loadProject(arrayBuffer);
+
+        // Capture thumbnail immediately
+        await captureThumbnail();
+    } catch (err) {
+        console.error(err);
+        showError("Failed to load project: " + err.message);
+    }
+}
 
 // -------- drag & drop --------
 fileDropZone.addEventListener("dragover", e => {
@@ -198,6 +245,41 @@ fileDropZone.addEventListener("drop", e => {
     }
 });
 
+fileInput.addEventListener("change", () => {
+    if (fileInput.files.length) handleFile(fileInput.files[0]);
+});
+
+// -------- thumbnail capture ----------
+async function captureThumbnail() {
+    let canvas = document.querySelector(".sc-canvas");
+    const start = Date.now();
+    while (!canvas && Date.now() - start < 3000) {
+        await new Promise(r => setTimeout(r, 50));
+        canvas = document.querySelector(".sc-canvas");
+    }
+
+    if (!canvas) {
+        showError("Failed to capture thumbnail: canvas not found");
+        return null;
+    }
+
+    scaffolding.relayout();
+
+    const dataUrl = canvas.toDataURL("image/png");
+    capturedThumbnail = dataUrl;
+
+    thumbnailPreview.src = dataUrl;
+    thumbnailPreview.style.display = "block";
+
+    return dataUrl;
+}
+
+// -------- regenerate button --------
+regenerateBtn.addEventListener("click", async () => {
+    if (!fileInput.files.length) return showError("No project loaded to capture thumbnail.");
+    await captureThumbnail();
+});
+
 // -------- AJAX submit --------
 form.addEventListener("submit", async e => {
     e.preventDefault();
@@ -208,6 +290,11 @@ form.addEventListener("submit", async e => {
     }
 
     const formData = new FormData(form);
+
+    if (capturedThumbnail) {
+        const blob = await (await fetch(capturedThumbnail)).blob();
+        formData.append("thumbnail", blob, "thumbnail.png");
+    }
 
     try {
         const res = await fetch(form.action, {

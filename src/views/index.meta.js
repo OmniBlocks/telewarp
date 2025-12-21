@@ -9,7 +9,7 @@ module.exports = async function(_, __, db) {
     );
 
     return {
-      projects: projects.filter((p) => p !== null), // filter out any missing
+      projects: projects.filter((p) => p !== null).reverse(), // filter out any missing
       title: "TeleWarp - Share projects",
       error: null,
     };
