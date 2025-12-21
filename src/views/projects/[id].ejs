@@ -492,7 +492,20 @@ const safePlatform = platform || platforms?.tw || { accent: "#000" };
           </a>
         </p>
       </div>
-      <p><button id="downloadSb3" class="btn btn-primary" download="<%= safePlatform.name %>.<%= safePlatform.accept[0] %>">Download</button></p>
+      <p><button id="downloadSb3" class="btn btn-primary" download="<%= safePlatform.name %>.<%= safePlatform.accept[0] %>">Download</button> <button 
+      class="btn btn-secondary flag-btn" 
+      data-id="<%= project.id %>"
+      style="flex: 1; border-color: #ff4444; color: #ff4444;"
+    >
+      <%= project.flagged ? "Unflag" : "Flag Project" %>
+    </button>
+    <button 
+      class="btn btn-primary delete-btn" 
+      data-id="<%= project.id %>"
+      style="flex: 1; background: #ff4444;"
+    >
+      Delete
+    </button></p>
     </div>
   </div>
   <% } %>
@@ -727,6 +740,45 @@ updateRunningClasses();
     if (!document.fullscreenElement) wrapper.requestFullscreen();
     else document.exitFullscreen();
   });
+});
+
+// Moderation Logic
+async function sendModerationAction(projectId, action) {
+  try {
+    const res = await fetch("/api/moderation", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ projectId, action })
+    });
+    
+    const data = await res.json();
+    if (data.success) {
+      // If deleted, redirect to home. If flagged, reload to show status.
+      if (action === 'delete') {
+        window.location.href = "/";
+      } else {
+        location.reload();
+      }
+    } else {
+      alert("Moderation failed: " + (data.error || "Unknown error"));
+    }
+  } catch (err) {
+    console.error("Moderation API error:", err);
+    alert("Could not connect to moderation server.");
+  }
+}
+
+// Event Listeners for Mod Buttons
+document.querySelector(".flag-btn")?.addEventListener("click", function() {
+  const id = this.getAttribute("data-id");
+  sendModerationAction(id, "flag");
+});
+
+document.querySelector(".delete-btn")?.addEventListener("click", function() {
+  const id = this.getAttribute("data-id");
+  if (confirm("WARNING: Are you sure you want to permanently delete this project?")) {
+    sendModerationAction(id, "delete");
+  }
 });
 </script>
 <% } %>
