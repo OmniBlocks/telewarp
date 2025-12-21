@@ -513,11 +513,17 @@ const safePlatform = platform || platforms?.tw || { accent: "#000" };
     </div>
   </div>
   <div class="buttons">
-    <p style="margin: 0;"><span style="display: inline-block;transform:scaleX(-1)">&copy;</span> <!-- <%-project.created_at%> --><%=new Date(project.created_at).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  }); %></p>
+    <%
+      const d = new Date(project.created_at);
+      const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      
+      const yyyy = d.getFullYear();
+      const monthName = months[d.getMonth()]; // No +1 needed here
+      const dd = String(d.getDate()).padStart(2, '0');
+      
+      const humanDate = `${yyyy}-${monthName}-${dd}`; // 2025-Dec-21
+    %>
+    <p style="margin: 0;"><span style="display: inline-block;transform:scaleX(-1)">&copy;</span> <!-- <%-project.created_at%> --><%= humanDate %></p>
     <button id="downloadSb3" class="btn btn-primary" download="<%= safePlatform.name %>.<%= safePlatform.accept[0] %>">Download</button> <button 
     class="btn btn-secondary flag-btn" 
     data-id="<%= project.id %>"
