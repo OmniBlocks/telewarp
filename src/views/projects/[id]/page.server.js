@@ -1,6 +1,6 @@
 module.exports = async function(params, _req, db) {
   const projectId = params.id;
-  const platforms = require("../../langs.json");
+  const platforms = require("../../../langs.json");
 
   try {
     const project = await db.get(`project:${projectId}`);

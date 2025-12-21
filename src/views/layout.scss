@@ -1,0 +1,145 @@
+@use "../css/colours.scss" as *;
+@use "../css/units.scss" as units;
+
+/* =========================
+   Theme-aware styles using `t` mixin
+   ========================= */
+
+.page-container {
+  @include t(background-color, bg);
+  @include t(color, text-color);
+  a {
+    @include t(color, link);
+  }
+}
+
+.header {
+  @include t(background-color, menu-bar);
+  color: white;
+
+  .link:hover {
+    @include t(background-color, black-transparent);
+  }
+}
+
+.footer {
+  border-top: 1px solid;
+  @include t(border-top-color, black-transparent);
+}
+
+/* =========================
+   Shared layout (theme-agnostic)
+   ========================= */
+
+body {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+}
+
+.page-container {
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  height: 100%;
+  margin-top: units.$menu-bar-height;
+}
+
+main {
+  flex-grow: 1;
+}
+
+.header {
+  display: flex;
+  padding-inline: 16px;
+  height: units.$menu-bar-height;
+  align-items: center;
+  justify-content: space-between;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  z-index: 1000;
+  color: white;
+}
+
+.header div {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.header .link {
+  height: 100%;
+  padding-inline: 8px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  background: transparent;
+  border: 0;
+  color: white !important;
+  cursor: pointer;
+}
+
+.hero {
+  background-color: rgb(103, 69, 170);
+  color: white;
+  padding: 2rem;
+  text-align: center;
+}
+
+.footer {
+  padding: 10px 0;
+  margin-top: 10px;
+}
+
+.footer a {
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.footer-content {
+  max-width: 600px;
+  margin: auto;
+}
+
+.footer-text {
+  text-align: center;
+  margin: 5px 0 10px 0;
+}
+
+.footer-columns {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.footer-section {
+  display: flex;
+  flex-direction: column;
+  width: 200px;
+  margin-bottom: 10px;
+}
+
+.footer-section > * {
+  margin-bottom: 10px;
+}
+
+.page {
+  max-width: 800px;
+  margin: auto;
+}
+
+.news {
+  display: flex;
+  justify-content: center;
+  padding: 14px;
+  text-align: center;
+  font-weight: bold;
+  color: white;
+  background: #cc2222;
+}

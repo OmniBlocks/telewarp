@@ -1,0 +1,31 @@
+@use "sass:map";
+$themes: (
+  light: (
+    bg: white,
+    text-color: #121212,
+    black-transparent: rgba(0, 0, 0, 0.1),
+    black-transparent-original: rgba(0, 0, 0, 0.1),
+    solid-border: #ddd,
+    menu-bar: #855cd6,
+    white: white,
+    link: blue,
+  ),
+  dark: (
+    bg: #121212,
+    text-color: white,
+    black-transparent: rgba(255, 255, 255, 0.1),
+    solid-border: #444,
+    menu-bar: #2f2f2f,
+    white: #222,
+    link: rgb(145, 211, 255),
+  )
+);
+
+@function theme($name, $key) {
+  @return map.get(map.get($themes, $name), $key);
+}
+@mixin t($property, $key) {
+  /* themed by colours.css */
+  #{$property}: theme(light, $key);
+  .dark & { #{$property}: theme(dark, $key); }
+}

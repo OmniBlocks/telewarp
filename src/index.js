@@ -2,15 +2,47 @@ const express = require("express");
 const path = require("path");
 const ejs = require("ejs");
 const fs = require("fs");
+const sass = require("sass");
+const csso = require("csso");
 const MarkdownIt = require("markdown-it");
 const { ClassicLevel } = require("classic-level");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const isProd = !Boolean(process.env.DEVELOPMENT);
 
+const layoutScssPath = path.join(__dirname, "views", "layout.scss");
+
+const modernNormalizePath = require.resolve("modern-normalize/modern-normalize.css");
+
+function compileMergedStyles(pageScssPath) {
+  let css = "";
+
+  // 1️⃣ modern-normalize first
+  if (fs.existsSync(modernNormalizePath)) {
+    css += fs.readFileSync(modernNormalizePath, "utf8") + "\n";
+  }
+
+  // 2️⃣ layout.scss
+  if (fs.existsSync(layoutScssPath)) {
+    const layout = sass.compile(layoutScssPath, { style: "expanded" });
+    css += layout.css + "\n";
+  }
+
+  // 3️⃣ page.scss
+  if (pageScssPath && fs.existsSync(pageScssPath)) {
+    const page = sass.compile(pageScssPath, { style: "expanded" });
+    css += page.css + "\n";
+  }
+
+  if (!css.trim()) return "";
+
+  // 4️⃣ single minify pass
+  return `<style>${isProd ? csso.minify(css).css : css}</style>`;
+}
 
 /* =========================
-   DATABASE (GLOBAL, OPEN ONCE)
+   DATABASE
    ========================= */
 
 const dbPath = path.join(__dirname, "leveldb");
@@ -24,13 +56,12 @@ const db = new ClassicLevel(dbPath, { valueEncoding: "json" });
     console.error("✖ Failed to open database:", err);
     process.exit(1);
   }
-})();
+})(); 
 
-// make db available everywhere
 app.locals.db = db;
 
 /* =========================
-   VIEW ENGINE SETUP
+   VIEW ENGINE
    ========================= */
 
 app.set("view engine", "ejs");
@@ -56,8 +87,8 @@ app.use((req, res, next) => {
   res.renderWithLayout = async (viewName, options = {}) => {
     try {
       let bodyHtml = "";
-
       const mdPath = path.join(__dirname, "views", viewName + ".md");
+
       if (fs.existsSync(mdPath)) {
         const md = new MarkdownIt();
         bodyHtml = `<div class="page">${md.render(
@@ -75,7 +106,6 @@ app.use((req, res, next) => {
       next(err);
     }
   };
-
   next();
 });
 
@@ -83,63 +113,82 @@ app.use((req, res, next) => {
    VIEW ROUTES LOADER
    ========================= */
 
-const walkViews = (dir, baseRoute = "") => {
+function walkViews(dir, baseRoute = "") {
   for (const entry of fs.readdirSync(dir)) {
     const fullPath = path.join(dir, entry);
     const stat = fs.statSync(fullPath);
 
-    if (stat.isDirectory()) {
-      if (!entry.startsWith("_") && !entry.startsWith("partials")) {
-        walkViews(fullPath, path.join(baseRoute, entry));
-      }
-      continue;
-    }
+    if (!stat.isDirectory()) continue;
+    if (entry.startsWith("_") || entry.startsWith("partials")) continue;
 
-    const ext = path.extname(entry);
-    if (![".ejs", ".md"].includes(ext)) continue;
+    // Route segment (supports [id] → :id)
+    let segment = entry.replace(/\[(.+?)\]/g, ":$1");
+    let nextBaseRoute =
+      entry === "index"
+        ? baseRoute
+        : path.join(baseRoute, segment);
 
-    let routePath = path.join(baseRoute, entry.replace(ext, ""));
-    routePath = routePath.replace(/\[(.+?)\]/g, ":$1");
+    let routePath =
+      nextBaseRoute === ""
+        ? "/"
+        : "/" + nextBaseRoute.replace(/\\/g, "/");
 
-    if (entry.replace(ext, "") === "index") {
-      routePath = baseRoute || "/";
-    } else {
-      routePath = "/" + routePath.replace(/\\/g, "/");
-    }
+    const ejsFile = path.join(fullPath, "page.ejs");
+    const serverFile = path.join(fullPath, "page.server.js");
+    const scssFile = path.join(fullPath, "page.scss");
 
-    app.get(routePath, async (req, res, next) => {
-      try {
-        let routeOptions = {};
-        const viewName = path.join(baseRoute, entry.replace(ext, ""));
-        const metaFile = path.join(dir, entry.replace(ext, ".meta.js"));
+    // ✅ Register route ONLY if page exists
+    if (fs.existsSync(ejsFile) || fs.existsSync(serverFile)) {
+      app.get(routePath, async (req, res, next) => {
+        try {
+          let routeOptions = {};
 
-        if (fs.existsSync(metaFile)) {
-          delete require.cache[require.resolve(metaFile)];
-          const meta = require(metaFile);
-          routeOptions =
-            typeof meta === "function" ? await meta(req.params, req, db) : meta;
+          if (fs.existsSync(serverFile)) {
+            delete require.cache[require.resolve(serverFile)];
+            const mod = require(serverFile);
+            routeOptions =
+              typeof mod === "function"
+                ? await mod(req.params, req, db)
+                : mod;
+          }
+
+          let bodyHtml = "";
+          if (fs.existsSync(ejsFile)) {
+            bodyHtml = await ejs.renderFile(ejsFile, {
+              params: req.params,
+              ...routeOptions,
+            });
+          }
+
+          const styleTag = compileMergedStyles(scssFile);
+
+          const title =
+            routeOptions.title ||
+            (routePath === "/"
+              ? "TeleWarp - Share projects"
+              : entry
+                  .replace(/[-_]/g, " ")
+                  .replace(/\b\w/g, (c) => c.toUpperCase()) +
+                " - TeleWarp");
+
+          res.render("layout", {
+            body: bodyHtml,
+            styleTag,
+            isProd,
+            title,
+            params: req.params,
+            ...routeOptions,
+          });
+        } catch (err) {
+          next(err);
         }
+      });
+    }
 
-        const defaultTitle =
-          routePath === "/"
-            ? "TeleWarp - Share projects"
-            : entry
-                .replace(ext, "")
-                .replace(/-/g, " ")
-                .replace(/\b\w/g, (c) => c.toUpperCase()) +
-              " - TeleWarp";
-
-        res.renderWithLayout(viewName, {
-          title: routeOptions.title || defaultTitle,
-          params: req.params,
-          ...routeOptions,
-        });
-      } catch (err) {
-        next(err);
-      }
-    });
+    // ✅ ALWAYS recurse (this is the real fix)
+    walkViews(fullPath, nextBaseRoute);
   }
-};
+}
 
 /* =========================
    API ROUTES LOADER
@@ -206,17 +255,6 @@ const mimeTypes = {
   ".md": "text/markdown",
   ".svg": "image/svg+xml",
 };
-
-app.get(/^\/dep\/(.+)$/, (req, res) => {
-  const modulePath = req.params[0]; // everything after /dep/
-  try {
-    const resolved = require.resolve(modulePath, { paths: [__dirname] });
-    res.type(mimeTypes[path.extname(resolved)] || "application/octet-stream");
-    res.send(fs.readFileSync(resolved));
-  } catch {
-    res.status(404).json({ error: "Module not found" });
-  }
-});
 
 /* =========================
    INIT + START
