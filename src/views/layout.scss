@@ -1,11 +1,21 @@
 @use '../css/colours.scss' as *;
 @use '../css/units.scss' as units;
 
-.page-container {
-  @include t(background-color, bg);
-  @include t(color, text-color);
+body {
+  background-color: theme(light, bg);
+  color: theme(light, text-color);
+
   a {
-    @include t(color, link);
+    color: theme(light, link);
+  }
+}
+
+body.dark {
+  background-color: theme(dark, bg);
+  color: theme(dark, text-color);
+
+  a {
+    color: theme(dark, link);
   }
 }
 
