@@ -11,7 +11,7 @@
                     <% if (p.thumbnail) { %>
                         <img src="/api/asset?id=thumb_<%= p.id %>.png" alt="<%= p.name %>" class="project-thumb">
                     <% } else { %>
-                        <div class="project-thumb placeholder"></div>
+                        <img src="/images/default-thumbnail.png" alt="<%= p.name %>" class="project-thumb">
                     <% } %>
                     <div class="project-name"><%= p.name %></div>
                 </a>
