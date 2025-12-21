@@ -17,7 +17,7 @@
   const url = 'https://example.com'
 
   function updateButton() {
-    // Don't add if button already exists anywhere
+    // Don't add if button already exists
     if (document.querySelector('[data-telewarp-button]')) return
 
     const feedbackItems = Array.from(
@@ -25,9 +25,6 @@
     ).filter((item) => item.querySelector("[class^='menu-bar_feedback-link_']"))
 
     if (!feedbackItems.length) return
-
-    // Hide button if a Scratch project is loaded.
-    if (window.vm?.runtime?.storage?.projectToken !== null) return
 
     feedbackItems.forEach((item) => {
       const previousItem = item.previousElementSibling
@@ -56,8 +53,40 @@
     })
   }
 
-  const observer = new MutationObserver(updateButton)
+  function removeButton() {
+    const btn = document.querySelector('[data-telewarp-button]')
+    btn?.remove()
+  }
+
+  // Watch projectToken dynamically
+  function watchProjectToken() {
+    if (!window.vm?.runtime?.storage) return
+    const storage = window.vm.runtime.storage
+    let currentToken = storage.projectToken
+
+    Object.defineProperty(storage, 'projectToken', {
+      get() {
+        return currentToken
+      },
+      set(value) {
+        currentToken = value
+        if (currentToken !== null) {
+          removeButton()
+        } else {
+          updateButton()
+        }
+      },
+      configurable: true,
+    })
+  }
+
+  // Observe DOM changes to add button if needed
+  const observer = new MutationObserver(() => {
+    if (window.vm?.runtime?.storage?.projectToken === null) updateButton()
+  })
   observer.observe(document.body, { childList: true, subtree: true })
-  setInterval(updateButton, 500)
+
+  // Initial setup
+  watchProjectToken()
   updateButton()
 })()
