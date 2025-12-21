@@ -190,7 +190,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     scaffolding.setExtensionSecurityManager({
         getSandboxMode: () => 'unsandboxed',
-        canLoadExtensionFromProject: url => url.startsWith("https://extensions.turbowarp.org/") || url.startsWith("https://omniblocks.github.io/extensions/"),
+        canLoadExtensionFromProject: url => {
+            if (url.startsWith("https://extensions.turbowarp.org/") || url.startsWith("https://omniblocks.github.io/extensions/")) return true;
+            showError("Cannot generate thumbnail because this project is using untrusted extensions. A placeholder will be shown instead.");
+            return false;
+        }
     });
 });
 
@@ -221,7 +225,6 @@ async function handleFile(file) {
         await captureThumbnail();
     } catch (err) {
         console.error(err);
-        showError("Failed to load project: " + err.message);
     }
 }
 
