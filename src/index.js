@@ -1,293 +1,269 @@
-const express = require('express')
-const path = require('path')
-const ejs = require('ejs')
-const fs = require('fs')
-const sass = require('sass')
-const csso = require('csso')
-const MarkdownIt = require('markdown-it')
-const { ClassicLevel } = require('classic-level')
+const express = require("express");
+const path = require("path");
+const ejs = require("ejs");
+const fs = require("fs");
+const sass = require("sass");
+const csso = require("csso");
+const MarkdownIt = require("markdown-it");
+const { ClassicLevel } = require("classic-level");
 
-const app = express()
-const PORT = process.env.PORT || 3000
-const isProd = !Boolean(process.env.DEVELOPMENT)
+const app = express();
+const PORT = process.env.PORT || 3000;
+const isProd = !Boolean(process.env.DEVELOPMENT);
 
-const layoutScssPath = path.join(__dirname, 'views', 'layout.scss')
-const modernNormalizePath = require.resolve('modern-normalize/modern-normalize.css')
+const layoutScssPath = path.join(__dirname, "views", "layout.scss");
 
-// =========================
-// Compile merged styles (normalize + layout + page)
+const modernNormalizePath = require.resolve("modern-normalize/modern-normalize.css");
+
 function compileMergedStyles(pageScssPath) {
-  let css = ''
+  let css = "";
 
+  // 1️⃣ modern-normalize first
   if (fs.existsSync(modernNormalizePath)) {
-    const normalizeCss = fs.readFileSync(modernNormalizePath, 'utf8')
-    css += `@layer normalize {\n${normalizeCss}\n}\n`
+    const normalizeCss = fs.readFileSync(modernNormalizePath, "utf8");
+    css += `@layer normalize {\n${normalizeCss}\n}\n`;
   }
 
+  // 2️⃣ layout.scss
   if (fs.existsSync(layoutScssPath)) {
-    const layout = sass.compile(layoutScssPath, { style: 'expanded' })
-    css += `@layer layout {\n${layout.css}\n}\n`
+    const layout = sass.compile(layoutScssPath, { style: "expanded" });
+    css += `@layer layout {\n${layout.css}\n}\n`;
   }
 
+  // 3️⃣ page.scss
   if (pageScssPath && fs.existsSync(pageScssPath)) {
-    const page = sass.compile(pageScssPath, { style: 'expanded' })
-    css += `@layer page {\n${page.css}\n}\n`
+    const page = sass.compile(pageScssPath, { style: "expanded" });
+    css += `@layer page {\n${page.css}\n}\n`;
   }
 
-  if (!css.trim()) return ''
+  if (!css.trim()) return "";
 
-  return isProd ? csso.minify(css).css : css
+  // 4️⃣ single minify pass
+  return `<style>${isProd ? csso.minify(css).css : css}</style>`;
 }
 
-// =========================
-// Database
-const dbPath = path.join(__dirname, 'leveldb')
-const db = new ClassicLevel(dbPath, { valueEncoding: 'json' })
+/* =========================
+   DATABASE
+   ========================= */
 
-;(async () => {
+const dbPath = path.join(__dirname, "leveldb");
+const db = new ClassicLevel(dbPath, { valueEncoding: "json" });
+
+(async () => {
   try {
-    await db.open()
-    console.log('✔ Database opened')
+    await db.open();
+    console.log("✔ Database opened");
   } catch (err) {
-    console.error('✖ Failed to open database:', err)
-    process.exit(1)
+    console.error("✖ Failed to open database:", err);
+    process.exit(1);
   }
-})()
+})(); 
 
-app.locals.db = db
+app.locals.db = db;
 
-// =========================
-// View engine
-app.set('view engine', 'ejs')
-app.set('views', path.join(__dirname, 'views'))
+/* =========================
+   VIEW ENGINE
+   ========================= */
 
-// =========================
-// Middleware
-app.use(express.urlencoded({ extended: true }))
-app.use(express.json())
-app.set('trust proxy', true)
-app.set('x-powered-by', false)
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
 
-app.use(express.static(path.join(__dirname, 'static')))
-app.use('/js', express.static(path.join(__dirname, 'frontend-js')))
+/* =========================
+   MIDDLEWARE
+   ========================= */
 
-// =========================
-// In-memory caches
-const cache = {} // { routePath: { html, stylePath, title } }
-const cssCache = {} // { viewName: compiledCSS }
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.set("trust proxy", true);
+app.set("x-powered-by", false);
 
-// =========================
-// renderWithLayout helper (dev)
+app.use(express.static(path.join(__dirname, "static")));
+app.use("/js", express.static(path.join(__dirname, "frontend-js")));
+
+/* =========================
+   renderWithLayout helper
+   ========================= */
+
 app.use((req, res, next) => {
   res.renderWithLayout = async (viewName, options = {}) => {
     try {
-      let bodyHtml = ''
-      const mdPath = path.join(__dirname, 'views', viewName + '.md')
+      let bodyHtml = "";
+      const mdPath = path.join(__dirname, "views", viewName + ".md");
 
       if (fs.existsSync(mdPath)) {
-        const md = new MarkdownIt()
-        bodyHtml = `<div class="page">${md.render(fs.readFileSync(mdPath, 'utf8'))}</div>`
+        const md = new MarkdownIt();
+        bodyHtml = `<div class="page">${md.render(
+          fs.readFileSync(mdPath, "utf8")
+        )}</div>`;
       } else {
-        bodyHtml = await ejs.renderFile(path.join(__dirname, 'views', viewName + '.ejs'), options)
+        bodyHtml = await ejs.renderFile(
+          path.join(__dirname, "views", viewName + ".ejs"),
+          options
+        );
       }
 
-      res.render('layout', { ...options, body: bodyHtml })
+      res.render("layout", { ...options, body: bodyHtml });
     } catch (err) {
-      next(err)
+      next(err);
     }
-  }
-  next()
-})
+  };
+  next();
+});
 
-// =========================
-// Serve in-memory CSS
-app.get('/css/:viewName.css', (req, res) => {
-  const css = cssCache[req.params.viewName]
-  if (!css) return res.sendStatus(404)
-  res.type('text/css').send(css)
-})
+/* =========================
+   VIEW ROUTES LOADER
+   ========================= */
 
-// =========================
-// Pre-render views
-async function preRenderViews(dir, baseRoute = '') {
+function walkViews(dir, baseRoute = "") {
   for (const entry of fs.readdirSync(dir)) {
-    const fullPath = path.join(dir, entry)
-    const stat = fs.statSync(fullPath)
+    const fullPath = path.join(dir, entry);
+    const stat = fs.statSync(fullPath);
 
-    if (!stat.isDirectory()) continue
-    if (entry.startsWith('_') || entry.startsWith('partials')) continue
+    if (!stat.isDirectory()) continue;
+    if (entry.startsWith("_") || entry.startsWith("partials")) continue;
 
-    const segment = entry.replace(/\[(.+?)\]/g, ':$1')
-    const nextBaseRoute = entry === 'index' ? baseRoute : path.join(baseRoute, segment)
-    const routePath = nextBaseRoute === '' ? '/' : '/' + nextBaseRoute.replace(/\\/g, '/')
+    // Route segment (supports [id] → :id)
+    let segment = entry.replace(/\[(.+?)\]/g, ":$1");
+    let nextBaseRoute =
+      entry === "index"
+        ? baseRoute
+        : path.join(baseRoute, segment);
 
-    // Skip / and /projects/*
-    if (routePath === '/' || routePath.startsWith('/projects/')) {
-      await preRenderViews(fullPath, nextBaseRoute)
-      continue
+    let routePath =
+      nextBaseRoute === ""
+        ? "/"
+        : "/" + nextBaseRoute.replace(/\\/g, "/");
+
+    const ejsFile = path.join(fullPath, "page.ejs");
+    const serverFile = path.join(fullPath, "page.server.js");
+    const scssFile = path.join(fullPath, "page.scss");
+
+    // ✅ Register route ONLY if page exists
+    if (fs.existsSync(ejsFile) || fs.existsSync(serverFile)) {
+      app.get(routePath, async (req, res, next) => {
+        try {
+          let routeOptions = {};
+
+          if (fs.existsSync(serverFile)) {
+            delete require.cache[require.resolve(serverFile)];
+            const mod = require(serverFile);
+            routeOptions =
+              typeof mod === "function"
+                ? await mod(req.params, req, db)
+                : mod;
+          }
+
+          let bodyHtml = "";
+          if (fs.existsSync(ejsFile)) {
+            bodyHtml = await ejs.renderFile(ejsFile, {
+              params: req.params,
+              ...routeOptions,
+            });
+          }
+
+          const styleTag = compileMergedStyles(scssFile);
+
+          const title =
+            routeOptions.title ||
+            (routePath === "/"
+              ? "TeleWarp - Share projects"
+              : entry
+                  .replace(/[-_]/g, " ")
+                  .replace(/\b\w/g, (c) => c.toUpperCase()) +
+                " - TeleWarp");
+
+          res.render("layout", {
+            body: bodyHtml,
+            styleTag,
+            isProd,
+            title,
+            params: req.params,
+            ...routeOptions,
+          });
+        } catch (err) {
+          next(err);
+        }
+      });
     }
 
-    const ejsFile = path.join(fullPath, 'page.ejs')
-    const serverFile = path.join(fullPath, 'page.server.js')
-    const scssFile = path.join(fullPath, 'page.scss')
-    const mdFile = path.join(fullPath, 'page.md')
-
-    if (fs.existsSync(ejsFile) || fs.existsSync(serverFile) || fs.existsSync(mdFile)) {
-      let routeOptions = {}
-      if (fs.existsSync(serverFile)) {
-        delete require.cache[require.resolve(serverFile)]
-        const mod = require(serverFile)
-        routeOptions = typeof mod === 'function' ? await mod({}, null, db) : mod
-      }
-
-      // Pre-render HTML
-      let bodyHtml = ''
-      if (fs.existsSync(mdFile)) {
-        const md = new MarkdownIt()
-        bodyHtml = `<div class="page">${md.render(fs.readFileSync(mdFile, 'utf8'))}</div>`
-      } else if (fs.existsSync(ejsFile)) {
-        bodyHtml = await ejs.renderFile(ejsFile, { params: {}, ...routeOptions })
-      }
-
-      // Pre-compile CSS in memory
-      if (isProd) {
-        const css = compileMergedStyles(scssFile)
-        cssCache[entry] = css
-      }
-
-      const title =
-        routeOptions.title ||
-        entry.replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) + ' - TeleWarp'
-
-      // Cache the pre-rendered HTML and style
-      cache[routePath] = { html: bodyHtml, stylePath: `/css/${entry}.css`, title, ...routeOptions }
-    }
-
-    await preRenderViews(fullPath, nextBaseRoute)
+    // ✅ ALWAYS recurse (this is the real fix)
+    walkViews(fullPath, nextBaseRoute);
   }
 }
 
-// =========================
-// Route handler
-function createRouteHandler(routePath, ejsFile, serverFile, scssFile) {
-  return async (req, res, next) => {
-    try {
-      // Serve cached pre-rendered page
-      if (isProd && cache[routePath]) {
-        const cached = cache[routePath]
-        return res.render('layout', {
-          body: cached.html,
-          styleTag: cached.stylePath ? `<link rel="stylesheet" href="${cached.stylePath}">` : '',
-          title: cached.title,
-          params: req.params,
-          ...cached,
-        })
-      }
+/* =========================
+   API ROUTES LOADER
+   ========================= */
 
-      // DEV: render on-the-fly
-      let routeOptions = {}
-      if (fs.existsSync(serverFile)) {
-        delete require.cache[require.resolve(serverFile)]
-        const mod = require(serverFile)
-        routeOptions = typeof mod === 'function' ? await mod(req.params, req, db) : mod
-      }
-
-      let bodyHtml = ''
-      if (fs.existsSync(ejsFile)) {
-        bodyHtml = await ejs.renderFile(ejsFile, {
-          params: req.params,
-          ...routeOptions,
-        })
-      }
-
-      const styleTag = `<style>${compileMergedStyles(scssFile)}</style>`
-      const title =
-        routeOptions.title ||
-        path
-          .basename(routePath)
-          .replace(/[-_]/g, ' ')
-          .replace(/\b\w/g, (c) => c.toUpperCase()) + ' - TeleWarp'
-
-      res.render('layout', { body: bodyHtml, styleTag, title, params: req.params, ...routeOptions })
-    } catch (err) {
-      next(err)
-    }
-  }
-}
-
-// =========================
-// Walk views and register routes
-function walkViewsForRoutes(dir, baseRoute = '') {
-  for (const entry of fs.readdirSync(dir)) {
-    const fullPath = path.join(dir, entry)
-    const stat = fs.statSync(fullPath)
-    if (!stat.isDirectory()) continue
-    if (entry.startsWith('_') || entry.startsWith('partials')) continue
-
-    const segment = entry.replace(/\[(.+?)\]/g, ':$1')
-    const nextBaseRoute = entry === 'index' ? baseRoute : path.join(baseRoute, segment)
-    const routePath = nextBaseRoute === '' ? '/' : '/' + nextBaseRoute.replace(/\\/g, '/')
-
-    const ejsFile = path.join(fullPath, 'page.ejs')
-    const serverFile = path.join(fullPath, 'page.server.js')
-    const scssFile = path.join(fullPath, 'page.scss')
-    const mdFile = path.join(fullPath, 'page.md')
-
-    if (fs.existsSync(ejsFile) || fs.existsSync(serverFile) || fs.existsSync(mdFile)) {
-      app.get(routePath, createRouteHandler(routePath, ejsFile, serverFile, scssFile))
-    }
-
-    walkViewsForRoutes(fullPath, nextBaseRoute)
-  }
-}
-
-// =========================
-// Walk API routes
-const walkApi = (dir, baseRoute = '') => {
+const walkApi = (dir, baseRoute = "") => {
   for (const file of fs.readdirSync(dir)) {
-    const fullPath = path.join(dir, file)
-    const stat = fs.statSync(fullPath)
+    const fullPath = path.join(dir, file);
+    const stat = fs.statSync(fullPath);
+
     if (stat.isDirectory()) {
-      if (!file.startsWith('_')) walkApi(fullPath, path.join(baseRoute, file))
-      continue
-    }
-    if (path.extname(file) !== '.js') continue
-
-    let routePath = path.join(baseRoute, file.replace('.js', ''))
-    routePath = routePath.replace(/\[(.+?)\]/g, ':$1')
-    if (file.replace('.js', '') === 'index') routePath = baseRoute || '/'
-    else routePath = '/' + routePath.replace(/\\/g, '/')
-
-    app.all('/api' + routePath, async (req, res, next) => {
-      try {
-        delete require.cache[require.resolve(fullPath)]
-        const handler = require(fullPath)
-        res.setHeader('Access-Control-Allow-Origin', '*')
-        res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS')
-        res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
-        if (req.method === 'OPTIONS') return res.sendStatus(200)
-        if (typeof handler === 'function') await handler(req, res, db, __dirname)
-        else res.status(500).json({ error: 'API module does not export a function' })
-      } catch (err) {
-        next(err)
+      if (!file.startsWith("_")) {
+        walkApi(fullPath, path.join(baseRoute, file));
       }
-    })
+      continue;
+    }
+
+    if (path.extname(file) !== ".js") continue;
+
+    let routePath = path.join(baseRoute, file.replace(".js", ""));
+    routePath = routePath.replace(/\[(.+?)\]/g, ":$1");
+
+    if (file.replace(".js", "") === "index") {
+      routePath = baseRoute || "/";
+    } else {
+      routePath = "/" + routePath.replace(/\\/g, "/");
+    }
+
+    app.all("/api" + routePath, async (req, res, next) => {
+      try {
+        delete require.cache[require.resolve(fullPath)];
+        const handler = require(fullPath);
+        res.setHeader("Access-Control-Allow-Origin", "*");
+        res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+        res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+        // Handle preflight
+        if (req.method === "OPTIONS") {
+          return res.sendStatus(200);
+        }
+
+        if (typeof handler === "function") {
+          await handler(req, res, db, __dirname);
+        } else {
+          res.status(500).json({ error: "API module does not export a function" });
+        }
+      } catch (err) {
+        next(err);
+      }
+    });
   }
-}
+};
 
-// =========================
-// Start server
-;(async () => {
-  if (isProd) {
-    console.log('⚡ Pre-rendering all views (except / and /projects/*) and compiling CSS...')
-    await preRenderViews(path.join(__dirname, 'views'))
-    console.log('✔ Pre-rendering complete')
-  }
+/* =========================
+   DEP LOADER
+   ========================= */
 
-  walkApi(path.join(__dirname, 'api'))
-  walkViewsForRoutes(path.join(__dirname, 'views'))
+const mimeTypes = {
+  ".js": "application/javascript",
+  ".json": "application/json",
+  ".css": "text/css",
+  ".html": "text/html",
+  ".txt": "text/plain",
+  ".md": "text/markdown",
+  ".svg": "image/svg+xml",
+};
 
-  app.listen(PORT, () => {
-    console.log(`🚀 Server running at http://localhost:${PORT}`)
-  })
-})()
+/* =========================
+   INIT + START
+   ========================= */
+
+walkApi(path.join(__dirname, "api"));
+walkViews(path.join(__dirname, "views"));
+
+app.listen(PORT, () => {
+  console.log(`🚀 Server running at http://localhost:${PORT}`);
+});
