@@ -1,30 +1,32 @@
-@use "sass:map";
+@use 'sass:map';
 $themes: (
   light: (
     bg: white,
     text-color: #121212,
-    black-transparent: rgba(0, 0, 0, 0.1),
-    black-transparent-original: rgba(0, 0, 0, 0.1),
+    black-transparent: rgba(0, 0, 0, 0.15),
+    black-transparent-original: rgba(0, 0, 0, 0.15),
     solid-border: #ddd,
-    menu-bar: #855cd6,
+    menu-bar: #b945c9,
     white: white,
-    link: blue,
+    link: rgb(55, 88, 236),
   ),
   dark: (
     bg: #121212,
-    text-color: white,
-    black-transparent: rgba(255, 255, 255, 0.1),
+    text-color: #e0e0e0,
+    black-transparent: rgba(255, 255, 255, 0.15),
     solid-border: #444,
     menu-bar: #2f2f2f,
     white: #222,
-    link: rgb(63, 178, 255),
-  )
+    link: rgb(85, 139, 255),
+  ),
 );
 
 @function theme($name, $key) {
   @return map.get(map.get($themes, $name), $key);
 }
 @mixin t($property, $key) {
- #{$property}: theme(light, $key);
-  body.dark & { #{$property}: theme(dark, $key); }
+  #{$property}: theme(light, $key);
+  .dark & {
+    #{$property}: theme(dark, $key);
+  }
 }

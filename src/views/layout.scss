@@ -1,5 +1,5 @@
-@use "../css/colours.scss" as *;
-@use "../css/units.scss" as units;
+@use '../css/colours.scss' as *;
+@use '../css/units.scss' as units;
 
 .page-container {
   @include t(background-color, bg);
@@ -23,9 +23,8 @@
   @include t(border-top-color, black-transparent);
 }
 
-
 body {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   display: flex;
   flex-direction: column;
   height: 100vh;
@@ -79,7 +78,7 @@ main {
 }
 
 .hero {
-  background-color: rgb(103, 69, 170);
+  background-color: rgb(148, 52, 151);
   color: white;
   padding: 2rem;
   text-align: center;
