@@ -498,3 +498,63 @@ main {
   align-items: center;
   gap: 4px;
 }
+
+/* =========================
+   Project Edit Dropdown
+   ========================= */
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+
+  .dropdown-toggle {
+    @include t(background, primary); // Use your btn-primary background
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+
+    &:hover {
+      @include t(background, primary-hover); // define hover in colours.scss
+    }
+  }
+
+  .dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    min-width: 200px;
+    background: white;
+    border-radius: 6px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    padding: 4px 0;
+
+    li {
+      list-style: none;
+
+      a {
+        display: block;
+        padding: 8px 12px;
+        color: #111;
+        text-decoration: none;
+        font-size: 0.9rem;
+
+        &:hover {
+          background: #eee;
+        }
+      }
+    }
+  }
+
+  &.open .dropdown-menu {
+    display: block;
+  }
+}

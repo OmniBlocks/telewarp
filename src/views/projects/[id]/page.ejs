@@ -18,11 +18,38 @@ const safePlatform = platform || platforms?.tw || { accent: "#000" };
   <div class="project-header">
     <h1><%= project.name %></h1>
 
-    <% if (editLink) { %>
+    <% if (safePlatform.id === 'tw' && platforms) { %>
+      <div class="dropdown">
+        <button class="btn btn-primary dropdown-toggle" type="button" id="editDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+          See inside using...
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="editDropdown">
+          <% platforms.forEach(p => { %>
+            <% if (Array.isArray(p.edit) && p.edit.length === 2) { %>
+              <li>
+                <a class="dropdown-item" target="_blank" href="<%= p.edit[0] %>">
+                  <%= p.name %>
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item" target="_blank" href="<%= p.edit[1] %>">
+                  <%= p.name %> (mirror)
+                </a>
+              </li>
+            <% } else { %>
+              <li>
+                <a class="dropdown-item" target="_blank" href="<%= p.edit ? p.edit : '#' %>">
+                  <%= p.name %>
+                </a>
+              </li>
+            <% } %>
+          <% }) %>
+        </ul>
+      </div>
+    <% } else if (editLink) { %>
       <a
         href="<%= editLink %>"
         target="_blank"
-        id="editLink"
         class="btn btn-primary"
         data-platform="<%= safePlatform.id %>"
       >
@@ -454,6 +481,40 @@ document.querySelector(".delete-btn")?.addEventListener("click", function() {
   if (confirm("WARNING: Are you sure you want to permanently delete this project?")) {
     sendModerationAction(id, "delete");
   }
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+  // Find the single "See Inside" link for non-TW platforms
+  const editLink = document.querySelector('a.btn[data-platform]:not(.dropdown-toggle)');
+  if (editLink) {
+    const projectId = "<%= project.id %>"; // EJS inject project ID
+    const apiRoot = window.location.origin;
+    editLink.href = editLink.href.replaceAll("{url}", `${apiRoot}/api/sb3?id=${projectId}`);
+  }
+});
+document.addEventListener("DOMContentLoaded", () => {
+  const apiRoot = window.location.origin;
+  const projectId = "<%= project.id %>";
+
+  // Update all dropdown links to replace {url} with actual SB3 URL
+  document.querySelectorAll('.dropdown-menu a').forEach(link => {
+    if (link.href.includes("{url}")) {
+      link.href = link.href.replace("{url}", `${apiRoot}/api/sb3?id=${projectId}`);
+    }
+  });
+
+  // Dropdown toggle logic
+  document.querySelectorAll('.dropdown-toggle').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const parent = btn.closest('.dropdown');
+      parent.classList.toggle('open');
+    });
+  });
+
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.dropdown.open').forEach(drop => drop.classList.remove('open'));
+  });
 });
 </script>
 <% } %>
