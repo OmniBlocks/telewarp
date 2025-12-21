@@ -100,7 +100,7 @@ const safePlatform = platform || platforms?.tw || { accent: "#000" };
           <hr />
         <% } %>
         <p style="margin: 0"><strong>Made in: </strong>
-          <a href="<%= safePlatform.url %>" target="_blank" style="color: <%= safePlatform.accent %>">
+          <a href="<%= Array.isArray(safePlatform.url) ? safePlatform.url[0] : safePlatform.url %>" target="_blank" style="color: <%= safePlatform.accent %>">
             <%= safePlatform.name ?? "Unknown" %>
           </a>
         </p>
