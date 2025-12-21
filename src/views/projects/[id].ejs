@@ -152,6 +152,12 @@ const platform =
   .control:hover {
     background: #88f2;
   }
+  .is-running #greenFlagBtn {
+    background: #88f4;
+  }
+  .is-stopped #stopBtn {
+    opacity: 0.5;
+  }
   #fullscreenBtn {
     width: 32px;
     height: 32px;
@@ -580,11 +586,29 @@ setInterval(syncWrapperWithCanvas, 100);
     unsandboxWarning.style.display = unsandboxCheckbox.checked ? "block" : "none";
   });
 
+  let isRunning = false;
   vm.on('ASSET_PROGRESS', (finished, total) => {
     const percent = total > 0 ? (finished / total) * 100 : 0;
     progressBar.style.width = `${percent}%`;
     progressText.innerText = `Downloading assets (${finished}/${total}) ...`;
   });
+
+function updateRunningClasses() {
+  document.documentElement.classList.toggle("is-running", isRunning);
+  document.documentElement.classList.toggle("is-stopped", !isRunning);
+}
+
+vm.runtime.on("PROJECT_RUN_START", () => {
+  isRunning = true;
+  updateRunningClasses();
+});
+
+vm.runtime.on("PROJECT_RUN_STOP", () => {
+  isRunning = false;
+  updateRunningClasses();
+});
+updateRunningClasses();
+
 
   let userChosenSandboxMode = 'iframe';
 
