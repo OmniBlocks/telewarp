@@ -70,6 +70,11 @@ const platform =
     gap: 4px;
   }
 
+  #projectWrapperWrapper {
+    min-height: 360px;
+    display: flex;
+    align-items: center;
+  }
   #projectWrapper {
     position: relative;
     width: 480px;
@@ -410,6 +415,7 @@ const platform =
         <button id="fullscreenBtn" class="control"><img src="/images/icon--fullscreen.svg" height="20"></button>
       </div>
 
+      <div id="projectWrapperWrapper">
       <div id="projectWrapper">
         <div id="project"></div>
         <div id="loadingOverlay" class="overlay-base">
@@ -429,6 +435,7 @@ const platform =
         </div>
       </div>
     </div>
+  </div>
 
     <div class="project-right">
       <p><strong>Platform:</strong>
