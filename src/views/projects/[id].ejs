@@ -89,7 +89,7 @@ const safePlatform = platform || platforms?.tw || { accent: "#000" };
   .projectControls {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 8px;
   }
 
   #projectWrapperWrapper {
@@ -422,6 +422,15 @@ const safePlatform = platform || platforms?.tw || { accent: "#000" };
     height: 30%;
     margin-top: -4px;
 }
+
+.speedIndicator {
+  color: #ffab1a;
+  font-weight: bold;
+  font-size: 0.8em;
+  /* flex should be set via js */
+  align-items: center;
+  gap: 4px;
+}
 </style>
 
 <div class="project-page">
@@ -454,6 +463,9 @@ const safePlatform = platform || platforms?.tw || { accent: "#000" };
         <div class="projectControls">
           <button id="greenFlagBtn" class="control"><img src="/images/flag.svg" height="20"></button>
           <button id="stopBtn" class="control"><img src="/images/icon--stop-all.svg" height="20"></button>
+          <div id="turboMode" class="speedIndicator" style="display: none;"><img src="/images/turbo.svg" height="18">Turbo Mode</div>
+          <div id="fps" class="speedIndicator" style="display: none;">30 FPS</div>
+          <div id="interpolation" class="speedIndicator" style="display: none;">Interpolation</div>
         </div>
         <button id="fullscreenBtn" class="control"><img src="/images/icon--fullscreen.svg" height="20"></button>
       </div>
@@ -562,6 +574,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   const unsandboxCheckbox = document.getElementById("unsandboxCheckbox");
   const unsandboxWarning = document.getElementById("unsandboxWarning");
   const progressText = document.getElementById("progressText");
+  const turboMode = document.getElementById("turboMode");
+  const fpsIndicator = document.getElementById("fps");
+  const interpolation = document.getElementById("interpolation");
   const apiRoot = window.location.origin;
   const PROJECT_NAME = "<%= project.name.replace(/"/g, '\\"') %>";
   const PROJECT_EXT = "<%= safePlatform.accept[0].replace(/"/g, '\\"') %>";
@@ -695,6 +710,7 @@ updateRunningClasses();
     const res = await fetch(`${apiRoot}/api/project?id=${projectId}`);
     const projectData = await res.json();
     await scaffolding.loadProject(projectData);
+    speedIndicator();
 
     loadingOverlay.style.display = "none";
     greenFlagOverlay.style.display = "flex";
@@ -703,9 +719,28 @@ updateRunningClasses();
   }
 
   function triggerGreenFlag() {
+    if (event.shiftKey) {
+      vm.setTurboMode(!vm.runtime.turboMode);
+      return;
+    }
+    if (event.altKey) {
+      vm.setFramerate(vm.runtime.frameLoop.framerate === 30 ? 60 : 30);
+      return;
+    }
     scaffolding.greenFlag();
     greenFlagOverlay.style.display = "none";
   }
+
+  function speedIndicator() {
+    turboMode.style.display = vm.runtime.turboMode ? 'flex' : 'none';
+    interpolation.style.display = vm.runtime.interpolationEnabled ? 'flex' : 'none';
+    fpsIndicator.innerText = `${vm.runtime.frameLoop.framerate} FPS`;
+    fpsIndicator.style.display = vm.runtime.frameLoop.framerate !== 30 ? 'flex' : 'none';
+  }
+  vm.on('TURBO_MODE_ON', speedIndicator);
+  vm.on('TURBO_MODE_OFF', speedIndicator);
+  vm.on('FRAMERATE_CHANGED', speedIndicator);
+  vm.on('INTERPOLATION_CHANGED', speedIndicator);
   
   document.getElementById("downloadSb3").addEventListener("click", async () => {
     if (!window.vm) {
