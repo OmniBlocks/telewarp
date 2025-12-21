@@ -110,6 +110,29 @@ const safePlatform = platform || platforms?.tw || { accent: "#000" };
     <% } %>
 </div>
 
+<!-- Advanced Settings Modal -->
+<div id="advancedSettingsModal">
+  <div class="modal-wrapper">
+    <div class="modal-header">Advanced Settings</div>
+    <div class="modal-body">
+      <label>
+        Framerate:
+        <input type="number" id="setFramerate" min="0" max="250" value="30" style="width: 60px;">
+      </label>
+      <br>
+      <label>
+        <input type="checkbox" id="nocompile">
+        Disable compiler (not recommended)
+      </label>
+      <!-- Add more advanced settings here -->
+    </div>
+    <div class="modal-footer">
+      <button id="closeAdvancedSettingsBtn" class="btn btn-primary">Close</button>
+    </div>
+  </div>
+</div>
+
+
 <!-- Restored security modal -->
 <div id="securityModal">
   <div class="modal-wrapper">
@@ -164,6 +187,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   const turboMode = document.getElementById("turboMode");
   const fpsIndicator = document.getElementById("fps");
   const interpolation = document.getElementById("interpolation");
+  const framerateInput = document.getElementById("setFramerate");
+  const compilerInput = document.getElementById("nocompile");
+  compilerInput.checked = false;
   const apiRoot = window.location.origin;
   const PROJECT_NAME = "<%= project.name.replace(/"/g, '\\"') %>";
   const PROJECT_EXT = "<%= safePlatform.accept[0].replace(/"/g, '\\"') %>";
@@ -297,6 +323,7 @@ updateRunningClasses();
     const res = await fetch(`${apiRoot}/api/project?id=${projectId}`);
     const projectData = await res.json();
     await scaffolding.loadProject(projectData);
+    framerateInput.value = vm.runtime.frameLoop.framerate;
     speedIndicator();
 
     loadingOverlay.style.display = "none";
@@ -322,6 +349,7 @@ updateRunningClasses();
     turboMode.style.display = vm.runtime.turboMode ? 'flex' : 'none';
     interpolation.style.display = vm.runtime.interpolationEnabled ? 'flex' : 'none';
     fpsIndicator.innerText = `${vm.runtime.frameLoop.framerate} FPS`;
+    framerateInput.value = vm.runtime.frameLoop.framerate;
     fpsIndicator.style.display = vm.runtime.frameLoop.framerate !== 30 ? 'flex' : 'none';
   }
   vm.on('TURBO_MODE_ON', speedIndicator);
@@ -357,10 +385,35 @@ updateRunningClasses();
   greenFlagOverlay.addEventListener("click", triggerGreenFlag);
   document.getElementById("greenFlagBtn").addEventListener("click", triggerGreenFlag);
   document.getElementById("stopBtn").addEventListener("click", () => scaffolding.stopAll());
-  document.getElementById("fullscreenBtn").addEventListener("click", () => {
+  document.getElementById("fullscreenBtn").addEventListener("click", (event) => {
+    if (event.shiftKey) {
+      // Show advanced settings modal
+      const modal = document.getElementById("advancedSettingsModal");
+      modal.style.display = "flex";
+      return;
+    }
+    
     const wrapper = document.getElementById("projectWrapper");
     if (!document.fullscreenElement) wrapper.requestFullscreen();
     else document.exitFullscreen();
+  });
+  const advModal = document.getElementById("advancedSettingsModal");
+  document.getElementById("closeAdvancedSettingsBtn").addEventListener("click", () => {
+    advModal.style.display = "none";
+  });
+
+  const fpsCheckbox = document.getElementById("showFPS");
+  framerateInput.value = 30;
+
+  // Apply framerate immediately when changed
+  framerateInput.addEventListener("input", () => {
+    const fps = parseInt(framerateInput.value, 10);
+    if (!isNaN(fps) && fps > 0) {
+      vm.setFramerate(fps);
+    }
+  });
+  compilerInput.addEventListener("change", () => {
+      vm.runtime.compilerOptions.enabled = !compilerInput.checked;
   });
 });
 

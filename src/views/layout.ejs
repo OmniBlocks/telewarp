@@ -35,4 +35,35 @@
 <% } %>
 </div>
 </body>
+<!-- Dark mode script -->
+<script>
+  const button = document.querySelector('.header #_darkSwitch') || document.createElement('button')
+  const icon = document.querySelector('#_themeIcon') || document.createElement('div')
+
+  function applyTheme(theme) {
+    if (theme === 'dark') {
+      document.body.classList.add('dark')
+      icon.src = '/images/tw-sun.svg'
+    } else {
+      document.body.classList.remove('dark')
+      icon.src = '/images/tw-moon.svg'
+    }
+  }
+
+  let savedTheme = localStorage.getItem('theme')
+
+  if (!savedTheme) {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+    savedTheme = prefersDark ? 'dark' : 'light'
+  }
+
+  applyTheme(savedTheme)
+
+  button.addEventListener('click', () => {
+    const isDark = document.body.classList.toggle('dark')
+    const newTheme = isDark ? 'dark' : 'light'
+    localStorage.setItem('theme', newTheme)
+    applyTheme(newTheme)
+  })
+</script>
 </html>

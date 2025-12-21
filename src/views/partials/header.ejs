@@ -1,42 +1,11 @@
 <header class="header">
   <div>
-    <a class="link" href="/"><img src="/images/logo.svg" height="32"></a>
+    <a class="link" href="/"><img src="/images/logo.svg" height="32" /></a>
     <a class="link" href="/upload">Upload</a>
   </div>
   <div>
     <button class="link" id="_darkSwitch">
-      <img id="_themeIcon" src="/images/tw-moon.svg" height="24">
+      <img id="_themeIcon" src="/images/tw-moon.svg" height="24" />
     </button>
   </div>
 </header>
-
-<script>
-  const button = document.querySelector(".header #_darkSwitch");
-  const icon = document.querySelector("#_themeIcon");
-
-  function applyTheme(theme) {
-    if (theme === "dark") {
-      document.body.classList.add("dark");
-      icon.src = "/images/tw-sun.svg";
-    } else {
-      document.body.classList.remove("dark");
-      icon.src = "/images/tw-moon.svg";
-    }
-  }
-
-  let savedTheme = localStorage.getItem("theme");
-
-  if (!savedTheme) {
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    savedTheme = prefersDark ? "dark" : "light";
-  }
-
-  applyTheme(savedTheme);
-
-  button.addEventListener("click", () => {
-    const isDark = document.body.classList.toggle("dark");
-    const newTheme = isDark ? "dark" : "light";
-    localStorage.setItem("theme", newTheme);
-    applyTheme(newTheme);
-  });
-</script>
