@@ -21,14 +21,18 @@
 <%- styleTag %>
 </head>
 <body>
+<% if (!contentOnly) { %>
 <!-- Header -->
 <%- include("partials/header") %>
 <div class="page-container">
 <div class="news">TeleWarp is in an alpha stage and may break at any time.</div>
+<% } %>
 <!-- Content -->
 <main><%- body %></main>
+<% if (!contentOnly) { %>
 <!-- Footer -->
 <%- include("partials/footer") %>
+<% } %>
 </div>
 </body>
 </html>

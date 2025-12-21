@@ -1,3 +1,3 @@
 module.exports = {
-  platforms: require("../../langs.json"),
-};
+  platforms: require('../../langs.json'),
+}
