@@ -22,7 +22,9 @@
     --text-color: #121212;
     --black-transparent: rgba(0, 0, 0, 0.1);
     --black-transparent-original: rgba(0, 0, 0, 0.1);
+    --solid-border: #ddd;
     --menu-bar: #855cd6;
+    --white: white;
 
     /* units */
     --menu-bar-height: 3rem;
@@ -34,6 +36,8 @@
     --text-color: #e0e0e0;
     --menu-bar: #2f2f2f;
     --black-transparent: rgba(255, 255, 255, 0.1);
+    --white: #222;
+    --solid-border: #444;
 }
 
 body {
