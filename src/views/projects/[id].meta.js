@@ -15,6 +15,8 @@ module.exports = async function(params, _req, db) {
       project: null,
       title: "Error - TeleWarp",
       error: true,
+      platforms: null,
+      platforms: require("../../langs.json")
     };
   }
 };
