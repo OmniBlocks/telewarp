@@ -1,10 +1,6 @@
 @use "../css/colours.scss" as *;
 @use "../css/units.scss" as units;
 
-/* =========================
-   Theme-aware styles using `t` mixin
-   ========================= */
-
 .page-container {
   @include t(background-color, bg);
   @include t(color, text-color);
@@ -27,9 +23,6 @@
   @include t(border-top-color, black-transparent);
 }
 
-/* =========================
-   Shared layout (theme-agnostic)
-   ========================= */
 
 body {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;

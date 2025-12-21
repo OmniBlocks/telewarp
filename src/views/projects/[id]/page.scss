@@ -50,7 +50,7 @@
   flex-grow: 1;
 }
 
-/* ===== Responsive ===== */
+
 
 @media screen and (max-width: 900px) {
   .project-layout {
@@ -75,7 +75,7 @@
   }
 }
 
-/* ===== Player ===== */
+
 
 #projectControlsContainer {
   display: flex;
@@ -115,7 +115,7 @@
   height: 100%;
 }
 
-/* ===== Overlays ===== */
+
 
 .overlay-base {
   position: absolute;
@@ -168,7 +168,7 @@
   justify-content: center;
 }
 
-/* ===== Controls ===== */
+
 
 .control,
 #fullscreenBtn {
@@ -208,7 +208,7 @@
   filter: brightness(0) invert(100%);
 }
 
-/* ===== Buttons ===== */
+
 
 .btn {
   border-radius: 6px;
@@ -229,7 +229,7 @@
   border: none;
 }
 
-/* ===== Security modal ===== */
+
 
 #securityModal {
   position: fixed;
@@ -297,7 +297,7 @@
   border-radius: 4px;
 }
 
-/* ===== Description ===== */
+
 
 .description {
   flex-grow: 1;
@@ -316,7 +316,7 @@
   align-items: center;
 }
 
-/* ===== Theme-aware header/footer ===== */
+
 
 .header {
   display: flex;
@@ -440,7 +440,7 @@ main {
   background: #cc2222;
 }
 
-/* ===== Animations ===== */
+
 
 @keyframes top-slide-in {
   0% { transform: translateY(50px); opacity: 0; }
@@ -484,7 +484,7 @@ main {
   margin-top: -4px;
 }
 
-/* ===== Misc ===== */
+
 
 .speedIndicator {
   color: #ffab1a;

@@ -17,7 +17,7 @@ $themes: (
     solid-border: #444,
     menu-bar: #2f2f2f,
     white: #222,
-    link: rgb(145, 211, 255),
+    link: rgb(63, 178, 255),
   )
 );
 
@@ -25,7 +25,6 @@ $themes: (
   @return map.get(map.get($themes, $name), $key);
 }
 @mixin t($property, $key) {
-  /* themed by colours.css */
-  #{$property}: theme(light, $key);
-  .dark & { #{$property}: theme(dark, $key); }
+ #{$property}: theme(light, $key);
+  body.dark & { #{$property}: theme(dark, $key); }
 }

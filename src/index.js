@@ -20,19 +20,20 @@ function compileMergedStyles(pageScssPath) {
 
   // 1️⃣ modern-normalize first
   if (fs.existsSync(modernNormalizePath)) {
-    css += fs.readFileSync(modernNormalizePath, "utf8") + "\n";
+    const normalizeCss = fs.readFileSync(modernNormalizePath, "utf8");
+    css += `@layer normalize {\n${normalizeCss}\n}\n`;
   }
 
   // 2️⃣ layout.scss
   if (fs.existsSync(layoutScssPath)) {
     const layout = sass.compile(layoutScssPath, { style: "expanded" });
-    css += layout.css + "\n";
+    css += `@layer layout {\n${layout.css}\n}\n`;
   }
 
   // 3️⃣ page.scss
   if (pageScssPath && fs.existsSync(pageScssPath)) {
     const page = sass.compile(pageScssPath, { style: "expanded" });
-    css += page.css + "\n";
+    css += `@layer page {\n${page.css}\n}\n`;
   }
 
   if (!css.trim()) return "";

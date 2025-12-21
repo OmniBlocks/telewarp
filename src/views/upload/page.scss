@@ -1,4 +1,4 @@
-/* ===== Drag & drop area ===== */
+
 .file-drop-zone {
     position: relative;
     border: 2px dashed #bbb;
@@ -63,7 +63,7 @@ button[type="submit"]:hover, #regenerateThumbnailBtn:hover {
     z-index: 1000;
 }
 
-/* ===== Thumbnail preview ===== */
+
 #thumbnailPreview {
     max-width: 100%;
     max-height: 200px;
