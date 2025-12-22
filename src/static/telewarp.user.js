@@ -122,15 +122,6 @@
     const modal = createModal('Share Project')
     const body = modal.body
 
-    const labelName = document.createElement('div')
-    labelName.className = ScratchCSS.find('prompt_label')
-    labelName.textContent = 'Project name:'
-    body.appendChild(labelName)
-
-    const nameInput = document.createElement('input')
-    nameInput.className = ScratchCSS.find('prompt_variable-name-text-input')
-    body.appendChild(nameInput)
-
     const labelNotes = document.createElement('div')
     labelNotes.className = ScratchCSS.find('prompt_label')
     labelNotes.textContent = 'Notes:'
@@ -171,8 +162,6 @@
     uploadBtn.textContent = 'Upload'
     buttonRow.appendChild(uploadBtn)
 
-    nameInput.value = window.ReduxStore?.getState()?.scratchGui?.projectTitle || 'Untitled'
-
     const sb3 = await window.vm.saveProjectSb3()
     let thumbnailBlob = null
 
@@ -191,8 +180,11 @@
       status.textContent = 'Uploading…'
 
       const form = new FormData()
-      form.append('projectFile', new File([sb3], `${nameInput.value}.sb3`))
-      form.append('projectName', nameInput.value)
+      form.append('projectFile', new File([sb3], 'project.sb3'))
+      form.append(
+        'projectName',
+        window.ReduxStore?.getState()?.scratchGui?.projectTitle || 'Untitled',
+      )
       form.append('projectDescription', descInput.value)
       if (thumbnailBlob) form.append('thumbnail', thumbnailBlob, 'thumbnail.png')
       const langId = location.hostname === 'omniblocks.github.io' ? 'ob' : 'tw'
