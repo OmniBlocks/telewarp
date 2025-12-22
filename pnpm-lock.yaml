@@ -30,8 +30,8 @@ importers:
         specifier: ^14.1.0
         version: 14.1.0
       mime:
-        specifier: ^4.1.0
-        version: 4.1.0
+        specifier: ^3.0.0
+        version: 3.0.0
       modern-normalize:
         specifier: ^3.0.1
         version: 3.0.1
@@ -488,9 +488,9 @@ packages:
     resolution: {integrity: sha512-Lbgzdk0h4juoQ9fCKXW4by0UJqj+nOOrI9MJ1sSj4nI8aI2eo1qmvQEie4VD1glsS250n15LsWsYtCugiStS5A==}
     engines: {node: '>=18'}
 
-  mime@4.1.0:
-    resolution: {integrity: sha512-X5ju04+cAzsojXKes0B/S4tcYtFAJ6tTMuSPBEn9CPGlrWr8Fiw7qYeLT0XyH80HSoAoqWCaz+MWKh22P7G1cw==}
-    engines: {node: '>=16'}
+  mime@3.0.0:
+    resolution: {integrity: sha512-jSCU7/VB1loIWBZe14aEYHU/+1UMEHoaO7qxCOVJOw9GgH72VAWppxNcjU+x9a2k3GSIBXNKxXQFqRvvZ7vr3A==}
+    engines: {node: '>=10.0.0'}
     hasBin: true
 
   minimatch@3.1.2:
@@ -1166,7 +1166,7 @@ snapshots:
     dependencies:
       mime-db: 1.54.0
 
-  mime@4.1.0: {}
+  mime@3.0.0: {}
 
   minimatch@3.1.2:
     dependencies:
