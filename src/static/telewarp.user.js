@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         TeleWarp
-// @version      1.1
+// @version      1.2
 // @match        https://turbowarp.org/*
 // @match        https://mirror.turbowarp.xyz/*
 // @match        https://omniblocks.github.io/*
@@ -44,40 +44,41 @@
 
   function createModal(title) {
     const overlay = ScratchCSS.find('modal_modal-overlay')
-    const contentC = ScratchCSS.find('modal_modal-content')
-    const headerC = ScratchCSS.find('modal_header')
+    const content = ScratchCSS.find('modal_modal-content')
+    const promptContent = ScratchCSS.find('prompt_modal-content')
+    const header = ScratchCSS.find('modal_header')
     const headerItem = ScratchCSS.find('modal_header-item')
     const headerTitle = ScratchCSS.find('modal_header-item-title')
     const headerClose = ScratchCSS.find('modal_header-item-close')
     const closeBtnC = ScratchCSS.find('close-button_close-button')
+    const closeLarge = ScratchCSS.find('close-button_large')
     const closeIcon = ScratchCSS.find('close-button_close-icon')
+    const bodyC = ScratchCSS.find('prompt_body')
 
     const backdrop = document.createElement('div')
     backdrop.className = overlay
+    backdrop.dir = 'ltr'
     document.body.appendChild(backdrop)
 
     const modal = document.createElement('div')
-    modal.className = contentC
-    modal.style.background = 'var(--ui-modal-background)'
-    modal.style.width = '600px'
-    modal.addEventListener('click', (e) => e.stopPropagation())
+    modal.className = `${content} ${promptContent}`
     backdrop.appendChild(modal)
 
-    const header = document.createElement('div')
-    header.className = headerC
-    modal.appendChild(header)
+    const headerEl = document.createElement('div')
+    headerEl.className = header
+    modal.appendChild(headerEl)
 
     const titleEl = document.createElement('div')
     titleEl.className = `${headerItem} ${headerTitle}`
     titleEl.textContent = title
-    header.appendChild(titleEl)
+    headerEl.appendChild(titleEl)
 
     const closeWrap = document.createElement('div')
     closeWrap.className = `${headerItem} ${headerClose}`
-    header.appendChild(closeWrap)
+    headerEl.appendChild(closeWrap)
 
     const closeBtn = document.createElement('div')
-    closeBtn.className = closeBtnC
+    closeBtn.className = `${closeBtnC} ${closeLarge}`
     closeWrap.appendChild(closeBtn)
 
     const closeImg = document.createElement('img')
@@ -87,12 +88,13 @@
     closeBtn.appendChild(closeImg)
 
     const body = document.createElement('div')
-    body.style.padding = '1rem'
+    body.className = bodyC
     modal.appendChild(body)
 
     const close = () => backdrop.remove()
     closeBtn.onclick = close
     backdrop.onclick = close
+    modal.onclick = (e) => e.stopPropagation()
 
     return { body, close }
   }
@@ -102,17 +104,14 @@
       throw new Error('VM renderer snapshot API not found')
     }
 
-    // Enable transparent preview temporarily
     window.vm.postIOData?.('video', { forceTransparentPreview: true })
 
     const dataURL = await new Promise((resolve) => {
       window.vm.renderer.requestSnapshot(resolve)
     })
 
-    // Disable transparent preview
     window.vm.postIOData?.('video', { forceTransparentPreview: false })
 
-    // Convert dataURL to Blob
     const blob = await fetch(dataURL).then((r) => r.blob())
     return blob
   }
@@ -120,39 +119,67 @@
   async function openUploadModal() {
     if (!window.vm) return
 
-    const modal = createModal('Upload project')
-    const { body } = modal
+    const modal = createModal('Share Project')
+    const body = modal.body
 
-    body.innerHTML = `
-      <label>Project name:</label>
-      <input id="tw-name" class="${ScratchCSS.find('input_input-form_')}" style="width:100%;font-family:inherit;font-size:1em;" />
+    const labelName = document.createElement('div')
+    labelName.className = ScratchCSS.find('prompt_label')
+    labelName.textContent = 'Project name:'
+    body.appendChild(labelName)
 
-      <label style="margin-top:.5rem;display:block">Notes:</label>
-      <textarea id="tw-desc" class="${ScratchCSS.find('input_input-form_')} ${ScratchCSS.find('custom-extension-modal_text-code-input_')}" rows="4" style="width:100%;font-family:inherit;font-weight:normal;font-size: 0.9em;"></textarea>
+    const nameInput = document.createElement('input')
+    nameInput.className = ScratchCSS.find('prompt_variable-name-text-input')
+    body.appendChild(nameInput)
 
-      <div style="display:flex;justify-content:space-between;align-items: center;">
-        <span id="tw-status">Thumbnail will be captured from the stage.</span>
-        <button id="tw-upload" class="${ScratchCSS.find('settings-modal_button_')}">Upload</button>
-      </div>    `
+    const labelNotes = document.createElement('div')
+    labelNotes.className = ScratchCSS.find('prompt_label')
+    labelNotes.textContent = 'Notes:'
+    labelNotes.style.marginTop = '0.5rem'
+    body.appendChild(labelNotes)
 
-    const nameInput = body.querySelector('#tw-name')
-    const descInput = body.querySelector('#tw-desc')
-    const thumbImg = body.querySelector('#tw-thumb')
-    const uploadBtn = body.querySelector('#tw-upload')
-    const status = body.querySelector('#tw-status')
+    const descInput = document.createElement('textarea')
+    descInput.rows = 4
+    descInput.style.resize = 'vertical'
+    descInput.style.width = '100%'
+    descInput.style.padding = '0.5rem'
+    descInput.style.border = '1px solid var(--ui-black-transparent)'
+    descInput.style.borderRadius = '4px'
+    body.appendChild(descInput)
 
-    const sb3 = await window.vm.saveProjectSb3()
+    const status = document.createElement('div')
+    status.style.marginTop = '0.5rem'
+    status.textContent = 'Thumbnail will be captured from the stage.'
+    body.appendChild(status)
+
+    const poweredBy = document.createElement('div')
+    poweredBy.style.marginTop = '0.5rem'
+    poweredBy.style.marginBottom = '0.5rem'
+    poweredBy.textContent = 'Powered by TeleWarp.'
+    body.appendChild(poweredBy)
+
+    const buttonRow = document.createElement('div')
+    buttonRow.className = ScratchCSS.find('prompt_button-row')
+    body.appendChild(buttonRow)
+
+    const cancelBtn = document.createElement('button')
+    cancelBtn.textContent = 'Cancel'
+    cancelBtn.onclick = modal.close
+    buttonRow.appendChild(cancelBtn)
+
+    const uploadBtn = document.createElement('button')
+    uploadBtn.className = ScratchCSS.find('prompt_ok-button')
+    uploadBtn.textContent = 'Upload'
+    buttonRow.appendChild(uploadBtn)
 
     nameInput.value = window.ReduxStore?.getState()?.scratchGui?.projectTitle || 'Untitled'
 
+    const sb3 = await window.vm.saveProjectSb3()
     let thumbnailBlob = null
 
     async function regenerate() {
       status.textContent = 'Capturing thumbnail…'
       try {
         thumbnailBlob = await captureStageThumbnail()
-        thumbImg.src = URL.createObjectURL(thumbnailBlob)
-        thumbImg.style.display = 'block'
         status.textContent = ''
       } catch (e) {
         status.textContent = e.message
@@ -161,7 +188,6 @@
 
     uploadBtn.onclick = async () => {
       await regenerate()
-
       status.textContent = 'Uploading…'
 
       const form = new FormData()
@@ -191,8 +217,6 @@
       document.querySelectorAll("div[class*='menu-bar_menu-bar-item_']"),
     ).filter((item) => item.querySelector("[class^='menu-bar_feedback-link_']"))
 
-    if (!feedbackItems.length) return
-
     feedbackItems.forEach((item) => {
       const previousItem = item.previousElementSibling
       if (!previousItem) return
@@ -200,27 +224,28 @@
       const feedbackButton = item.querySelector("[class*='menu-bar_feedback-button_']")
       if (!feedbackButton) return
 
-      const classes = Array.from(feedbackButton.classList).join(' ')
-
       const btn = document.createElement('button')
-      btn.textContent = 'Upload to TeleWarp'
-      btn.className = classes
+      btn.textContent = 'Share'
+      btn.className = feedbackButton.className
       btn.setAttribute('data-telewarp-button', 'true')
       btn.style.cssText = feedbackButton.style.cssText
       btn.style.backgroundColor = '#ff8c1a'
       btn.style.border = 'none'
       btn.style.color = '#fff'
+      btn.onclick = openUploadModal
 
-      btn.onclick = () => openUploadModal()
+      const container = document.createElement('div')
+      container.className = 'menu-bar_menu-bar-item_oLDa-'
+      container.appendChild(btn)
 
-      const newContainer = document.createElement('div')
-      newContainer.className = 'menu-bar_menu-bar-item_oLDa-'
-      newContainer.appendChild(btn)
-
-      previousItem.parentElement.insertBefore(newContainer, previousItem)
+      previousItem.parentElement.insertBefore(container, previousItem)
     })
   }
 
-  new MutationObserver(updateButton).observe(document.body, { childList: true, subtree: true })
+  new MutationObserver(updateButton).observe(document.body, {
+    childList: true,
+    subtree: true,
+  })
+
   updateButton()
 })()
