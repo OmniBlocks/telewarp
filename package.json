@@ -9,7 +9,11 @@
     "dev": "DEVELOPMENT=YES nodemon --watch src/index.js src/index.js",
     "build": "node build.js",
     "build:watch": "node build.js --watch",
-    "dev:full": "npm run build:watch & npm run dev"
+    "build:server": "node build.js --server",
+    "build:server:watch": "node build.js --server --watch",
+    "dev:full": "npm run build:watch & npm run dev",
+    "dev:esbuild": "node build.js --dev",
+    "start:prod": "NODE_ENV=production node dist/index.js"
   },
   "keywords": [],
   "author": "",

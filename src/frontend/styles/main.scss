@@ -1,0 +1,255 @@
+@use '../css/colours.scss' as *;
+@use '../css/units.scss' as units;
+
+body {
+  background-color: theme(light, bg);
+  color: theme(light, text-color);
+
+  a {
+    color: theme(light, link);
+  }
+}
+
+body.dark {
+  background-color: theme(dark, bg);
+  color: theme(dark, text-color);
+
+  a {
+    color: theme(dark, link);
+  }
+}
+
+.header {
+  @include t(background-color, menu-bar);
+  color: white;
+
+  .link:hover {
+    @include t(background-color, black-transparent);
+  }
+}
+
+.footer {
+  border-top: 1px solid;
+  @include t(border-top-color, black-transparent);
+}
+
+body {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+}
+
+.page-container {
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  height: 100%;
+  margin-top: units.$menu-bar-height;
+}
+
+main {
+  flex-grow: 1;
+}
+
+.header {
+  display: flex;
+  padding-inline: 16px;
+  height: units.$menu-bar-height;
+  align-items: center;
+  justify-content: space-between;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  z-index: 1000;
+  color: white;
+}
+
+.header div {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.header .link {
+  height: 100%;
+  padding-inline: 8px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  background: transparent;
+  border: 0;
+  color: white !important;
+  cursor: pointer;
+}
+
+.hero {
+  background-color: rgb(148, 52, 151);
+  color: white;
+  padding: 2rem;
+  text-align: center;
+}
+
+.footer {
+  padding: 10px 0;
+  margin-top: 10px;
+}
+
+.footer a {
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.footer-content {
+  max-width: 600px;
+  margin: auto;
+}
+
+.footer-text {
+  text-align: center;
+  margin: 5px 0 10px 0;
+}
+
+.footer-columns {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.footer-section {
+  display: flex;
+  flex-direction: column;
+  width: 200px;
+  margin-bottom: 10px;
+}
+
+.footer-section > * {
+  margin-bottom: 10px;
+}
+
+.page {
+  max-width: 800px;
+  margin: auto;
+}
+
+.news {
+  display: flex;
+  justify-content: center;
+  padding: 14px;
+  text-align: center;
+  font-weight: bold;
+  color: white;
+  background: #cc2222;
+}
+
+/* Additional styles for React components */
+.projects-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.project-card {
+  display: block;
+  text-decoration: none;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1rem;
+  width: 200px;
+  transition: transform 0.2s;
+}
+
+.project-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.project-thumb {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.project-name {
+  margin-top: 0.5rem;
+  font-weight: bold;
+  color: inherit;
+}
+
+.upload-form {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.file-drop-zone {
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.file-drop-zone:hover,
+.file-drop-zone.dragover {
+  border-color: #007bff;
+  background-color: #f8f9fa;
+}
+
+.file-drop-text {
+  margin: 0;
+  color: #666;
+}
+
+#errorPopup {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  border: 1px solid #f5c6cb;
+}
+
+.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  border: 1px solid #f5c6cb;
+}
+
+.row {
+  margin-bottom: 2rem;
+}
+
+.flag-btn, .delete-btn {
+  margin-right: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.flag-btn {
+  background-color: #ffc107;
+  color: #000;
+}
+
+.delete-btn {
+  background-color: #dc3545;
+  color: white;
+}
+
+.flag-btn:hover {
+  background-color: #e0a800;
+}
+
+.delete-btn:hover {
+  background-color: #c82333;
+}

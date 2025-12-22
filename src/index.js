@@ -78,7 +78,25 @@ app.set('trust proxy', true)
 app.set('x-powered-by', false)
 
 app.use(express.static(path.join(__dirname, 'static')))
-app.use('/js', express.static(path.join(__dirname, 'frontend-js')))
+
+/* =========================
+   REACT APP INTEGRATION
+   ========================= */
+
+// Serve React app for SPA routes
+const manifestPath = path.join(__dirname, 'static', 'dist', 'manifest.json')
+let manifest = {}
+
+if (fs.existsSync(manifestPath)) {
+  try {
+    manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'))
+  } catch (err) {
+    console.warn('⚠️ Could not load frontend manifest:', err.message)
+  }
+}
+
+// Make manifest available to templates
+app.locals.manifest = manifest
 
 /* =========================
    renderWithLayout helper
@@ -256,6 +274,35 @@ const mimeTypes = {
 
 walkApi(path.join(__dirname, 'api'))
 walkViews(path.join(__dirname, 'views'))
+
+// Catch-all handler for React Router (SPA)
+app.get('*', (req, res) => {
+  // Skip API routes and static files
+  if (req.path.startsWith('/api/') || 
+      req.path.startsWith('/images/') || 
+      req.path.startsWith('/dist/') ||
+      req.path.includes('.')) {
+    return res.status(404).send('Not Found')
+  }
+
+  // Serve React app
+  const indexScript = manifest.index || 'index.js'
+  
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>TeleWarp - Share projects</title>
+    </head>
+    <body>
+      <div id="root"></div>
+      <script type="module" src="/dist/${indexScript}"></script>
+    </body>
+    </html>
+  `)
+})
 
 app.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`)
