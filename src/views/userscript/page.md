@@ -1,18 +1,18 @@
 # TeleWarp userscript
 
-The TeleWarp userscript integrates a "Share" button into block-based programming languages using the
-TeleWarp service. [Click here](/telewarp.user.js) to install it.
+The TeleWarp userscript adds a "Share" button into other block-based programming languages by
+uploading to the TeleWarp service. [Click here](/telewarp.user.js) to install it with your
+userscript manager.
 
-This userscript is in alpha and may break.
+**This userscript is in alpha and may break when authentication is implemented into TeleWarp.**
 
-## How to use
+## Usage
 
-When using TurboWarp or OmniBlocks with the userscript, a button labelled "Upload to TeleWarp" will
-appear before "See Project Page". Open a project and click the button to open a popup allowing you
-to enter details about your project.
+When you use TurboWarp or OmniBlocks with this extension, an orange "Share" button similar to
+Scratch's will appear before the "See Project Page" button. Clicking it will let you enter notes for
+your project and upload it.
 
-![A dialogue with inputs for title, description, and buttons for regenerating the thumbnail and for uploading the project.](/images/userscript-modal.png)
+![Userscript modal](/images/userscript.png)
 
-_See Appel on Scratch [here](https://scratch.mit.edu/projects/60917032/)_
-
-After clicking "Upload", a tab will open with your project in TeleWarp. :)
+After uploading, your project will be available on TeleWarp, and a tab will open with your project's
+page.

@@ -20,6 +20,7 @@
     "ejs": "^3.1.10",
     "express": "^5.2.1",
     "markdown-it": "^14.1.0",
+    "mime": "^4.1.0",
     "modern-normalize": "^3.0.1",
     "multer": "^2.0.2",
     "profanease": "^1.1.2",
