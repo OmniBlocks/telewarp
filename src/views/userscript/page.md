@@ -2,7 +2,8 @@
 
 The TeleWarp userscript adds a "Share" button into other block-based programming languages by
 uploading to the TeleWarp service. [Click here](/telewarp.user.js) to install it with your
-userscript manager.
+userscript manager. If you just want to use it quickly, it should also work if you simply paste the
+code into your browser console.
 
 **This userscript is in alpha and may break when authentication is implemented into TeleWarp.**
 
