@@ -9,10 +9,7 @@
     "dev": "DEVELOPMENT=YES nodemon --watch src/index.js src/index.js",
     "build": "node build.js",
     "build:watch": "node build.js --watch",
-    "build:server": "node build.js --server",
-    "build:server:watch": "node build.js --server --watch",
-    "dev:full": "npm run build:watch & npm run dev",
-    "dev:esbuild": "node build.js --dev",
+    "dev:esbuild": "node build.js --dev --watch",
     "start:prod": "NODE_ENV=production node dist/index.js"
   },
   "keywords": [],
@@ -35,6 +32,7 @@
   },
   "devDependencies": {
     "esbuild": "^0.19.0",
+    "marked": "^9.1.6",
     "nodemon": "^3.1.11",
     "prettier": "^3.7.4",
     "sass": "^1.97.1"

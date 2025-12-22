@@ -1,19 +1,28 @@
 import React, { useState, useEffect } from 'react'
+import { marked } from 'marked'
+import privacyMarkdown from '../assets/markdown/privacy.md'
 
 function Privacy() {
   const [content, setContent] = useState('')
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchContent()
+    renderContent()
   }, [])
 
-  const fetchContent = async () => {
+  const renderContent = async () => {
     try {
-      const response = await fetch('/api/page/privacy')
-      if (!response.ok) throw new Error('Failed to fetch content')
-      const data = await response.json()
-      setContent(data.content || '')
+      // Configure marked to be safe
+      marked.setOptions({
+        breaks: true,
+        gfm: true,
+        sanitize: false, // We control the markdown content
+        smartLists: true,
+        smartypants: true
+      })
+      
+      const htmlContent = marked(privacyMarkdown)
+      setContent(htmlContent)
     } catch (err) {
       console.error('Error fetching Privacy content:', err)
       setContent('<p>Failed to load Privacy Policy content.</p>')

@@ -1,19 +1,28 @@
 import React, { useState, useEffect } from 'react'
+import { marked } from 'marked'
+import termsMarkdown from '../assets/markdown/terms.md'
 
 function Terms() {
   const [content, setContent] = useState('')
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchContent()
+    renderContent()
   }, [])
 
-  const fetchContent = async () => {
+  const renderContent = async () => {
     try {
-      const response = await fetch('/api/page/terms')
-      if (!response.ok) throw new Error('Failed to fetch content')
-      const data = await response.json()
-      setContent(data.content || '')
+      // Configure marked to be safe
+      marked.setOptions({
+        breaks: true,
+        gfm: true,
+        sanitize: false, // We control the markdown content
+        smartLists: true,
+        smartypants: true
+      })
+      
+      const htmlContent = marked(termsMarkdown)
+      setContent(htmlContent)
     } catch (err) {
       console.error('Error fetching Terms content:', err)
       setContent('<p>Failed to load Terms of Service content.</p>')
