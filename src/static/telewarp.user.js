@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         TeleWarp
-// @version      1.0
+// @version      1.1
 // @match        https://turbowarp.org/*
 // @match        https://mirror.turbowarp.xyz/*
 // @match        https://omniblocks.github.io/*
@@ -124,27 +124,20 @@
     const { body } = modal
 
     body.innerHTML = `
-      <label>Project name</label>
-      <input id="tw-name" class="${ScratchCSS.find('input_input-form_')}" style="width:100%" />
+      <label>Project name:</label>
+      <input id="tw-name" class="${ScratchCSS.find('input_input-form_')}" style="width:100%;font-family:inherit;font-size:1em;" />
 
-      <label style="margin-top:.5rem;display:block">Notes</label>
-      <textarea id="tw-desc" rows="4" style="width:100%"></textarea>
+      <label style="margin-top:.5rem;display:block">Notes:</label>
+      <textarea id="tw-desc" class="${ScratchCSS.find('input_input-form_')} ${ScratchCSS.find('custom-extension-modal_text-code-input_')}" rows="4" style="width:100%;font-family:inherit;font-weight:normal;font-size: 0.9em;"></textarea>
 
-      <h3 style="margin-top:1rem">Thumbnail</h3>
-      <img id="tw-thumb" style="max-width:100%;display:none;border-radius:8px" />
-      <button id="tw-regenerate" type="button" class="${ScratchCSS.find('settings-modal_button_')}">Regenerate thumbnail</button>
-
-      <div style="margin-top:1rem;text-align:right">
+      <div style="display:flex;justify-content:space-between;align-items: center;">
+        <span id="tw-status">Thumbnail will be captured from the stage.</span>
         <button id="tw-upload" class="${ScratchCSS.find('settings-modal_button_')}">Upload</button>
-      </div>
-
-      <div id="tw-status" style="margin-top:.5rem"></div>
-    `
+      </div>    `
 
     const nameInput = body.querySelector('#tw-name')
     const descInput = body.querySelector('#tw-desc')
     const thumbImg = body.querySelector('#tw-thumb')
-    const regenBtn = body.querySelector('#tw-regenerate')
     const uploadBtn = body.querySelector('#tw-upload')
     const status = body.querySelector('#tw-status')
 
@@ -166,10 +159,9 @@
       }
     }
 
-    regenBtn.onclick = regenerate
-    await regenerate()
-
     uploadBtn.onclick = async () => {
+      await regenerate()
+
       status.textContent = 'Uploading…'
 
       const form = new FormData()
