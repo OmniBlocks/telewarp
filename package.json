@@ -6,7 +6,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node src/index.js",
-    "dev": "DEVELOPMENT=YES nodemon --watch src/index.js src/index.js"
+    "dev": "DEVELOPMENT=YES nodemon --watch src/index.js src/index.js",
+    "build": "node build.js",
+    "build:watch": "node build.js --watch",
+    "dev:full": "npm run build:watch & npm run dev"
   },
   "keywords": [],
   "author": "",
@@ -16,19 +19,20 @@
     "@turbowarp/scaffolding": "^0.3.0",
     "adm-zip": "^0.5.16",
     "classic-level": "^3.0.0",
-    "csso": "^5.0.5",
-    "ejs": "^3.1.10",
     "express": "^5.2.1",
     "markdown-it": "^14.1.0",
     "mime": "^3.0.0",
     "modern-normalize": "^3.0.1",
     "multer": "^2.0.2",
     "profanease": "^1.1.2",
-    "sass": "^1.97.1"
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.8.0"
   },
   "devDependencies": {
+    "esbuild": "^0.19.0",
     "nodemon": "^3.1.11",
     "prettier": "^3.7.4",
-    "prettier-plugin-ejs": "^1.0.3"
+    "sass": "^1.97.1"
   }
 }
