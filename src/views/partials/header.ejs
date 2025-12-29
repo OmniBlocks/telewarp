@@ -1,10 +1,22 @@
 <header class="header">
-  <div>
-    <a class="link" href="/"><img src="/images/logo.svg" height="32" /></a>
+  <div class="header-left">
+    <a class="link" href="/"><img src="/images/logo.svg" height="32" alt="TeleWarp Logo" /></a>
     <a class="link" href="/upload">Upload</a>
   </div>
-  <div>
-    <button class="link" id="_darkSwitch">
+
+  <div class="header-right">
+    <% if (user) { %>
+      <div class="user-block">
+        <a class="link user-link" href="/user/<%= user.username %>">
+          <img class="header-avatar" src="/api/user-api?action=get&user=<%= user.username %>&type=image" height="28" width="28" />
+          <span class="username"><%= user.username %></span>
+        </a>
+      </div>
+    <% } else { %>
+      <a class="link" href="/login">Login</a>
+    <% } %>
+
+    <button class="link" id="_darkSwitch" aria-label="Toggle Theme">
       <img id="_themeIcon" src="/images/tw-moon.svg" height="24" />
     </button>
   </div>

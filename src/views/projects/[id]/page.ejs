@@ -16,7 +16,15 @@ const safePlatform = platform || platforms?.tw || { accent: "#000" };
   %>
 
   <div class="project-header">
-    <h1><%= project.name %></h1>
+    <div class="project-title">
+      <h1><%= project.name %></h1>
+      <div class="project-author">
+        by
+        <a href="/user/<%= project.author %>">
+          <%= project.author %>
+        </a>
+    </div>
+    </div>
 
     <% if (safePlatform.id === 'tw' && platforms) { %>
       <div class="dropdown">

@@ -81,6 +81,47 @@ app.use(express.static(path.join(__dirname, 'static')))
 app.use('/js', express.static(path.join(__dirname, 'frontend-js')))
 
 /* =========================
+   AUTH MIDDLEWARE
+   ========================= */
+
+app.use(async (req, res, next) => {
+  req.user = null; // Default to not logged in
+  
+  const cookieHeader = req.headers.cookie;
+  if (cookieHeader) {
+    const token = cookieHeader
+      .split(';')
+      .find(c => c.trim().startsWith('tw_session='))
+      ?.split('=')[1];
+
+    if (token) {
+      try {
+        const session = await db.get(`session:${token}`);
+        
+        // Check if session is expired
+        if (Date.now() < session.expires) {
+          const userData = await db.get(`user:${session.username.toLowerCase()}`);
+          
+          // Attach user to req (for logic) and res.locals (for EJS)
+          req.user = {
+            username: userData.username,
+            bio: userData.bio,
+            joined: userData.joined,
+            avatarUrl: `/api/user-api?action=get&user=${userData.username}&type=image`
+          };
+        }
+      } catch (err) {
+        // Session or user not found, ignore and stay logged out
+      }
+    }
+  }
+  
+  // res.locals makes 'user' available in all EJS templates automatically
+  res.locals.user = req.user;
+  next();
+});
+
+/* =========================
    renderWithLayout helper
    ========================= */
 
@@ -170,6 +211,7 @@ function walkViews(dir, baseRoute = '') {
             isProd,
             title,
             contentOnly: routeOptions.contentOnly ?? false,
+            user: req.user,
             params: req.params,
             ...routeOptions,
           })

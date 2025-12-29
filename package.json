@@ -23,6 +23,7 @@
     "mime": "^3.0.0",
     "modern-normalize": "^3.0.1",
     "multer": "^2.0.2",
+    "p-limit": "^7.2.0",
     "profanease": "^1.1.2",
     "sass": "^1.97.1"
   },
