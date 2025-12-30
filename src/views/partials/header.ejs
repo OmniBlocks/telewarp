@@ -6,11 +6,19 @@
 
   <div class="header-right">
     <% if (user) { %>
-      <div class="user-block">
-        <a class="link user-link" href="/user/<%= user.username %>">
-          <img class="header-avatar" src="/api/user-api?action=get&user=<%= user.username %>&type=image" height="28" width="28" />
+      <div class="user-block dropdown" id="userDropdown">
+        <button class="link user-link dropdown-toggle" aria-haspopup="true" aria-expanded="false">
+          <img class="header-avatar" src="/api/user-api?action=get&user=<%= user.username %>&type=image" height="32" width="32" />
           <span class="username"><%= user.username %></span>
-        </a>
+          <span class="chevron">▾</span>
+        </button>
+        
+        <div class="dropdown-menu">
+          <a class="dropdown-item" href="/user/<%= user.username %>">Profile</a>
+          <a class="dropdown-item" href="/settings">Settings</a>
+          <hr />
+          <a class="dropdown-item logout" href="/logout">Logout</a>
+        </div>
       </div>
     <% } else { %>
       <a class="link" href="/login">Login</a>
@@ -21,3 +29,28 @@
     </button>
   </div>
 </header>
+<script>document.addEventListener('DOMContentLoaded', () => {
+  const userDropdown = document.getElementById('userDropdown');
+  const dropdownToggle = userDropdown?.querySelector('.dropdown-toggle');
+
+  if (dropdownToggle) {
+    dropdownToggle.addEventListener('click', (e) => {
+      // Prevent the click from bubbling up to the window
+      e.stopPropagation();
+      
+      // Toggle the 'open' class on the user-block div
+      const isOpen = userDropdown.classList.toggle('open');
+      
+      // Accessibility: update aria-expanded state
+      dropdownToggle.setAttribute('aria-expanded', isOpen);
+    });
+  }
+
+  // Close the dropdown if the user clicks anywhere else on the page
+  window.addEventListener('click', () => {
+    if (userDropdown && userDropdown.classList.contains('open')) {
+      userDropdown.classList.remove('open');
+      dropdownToggle.setAttribute('aria-expanded', 'false');
+    }
+  });
+});</script>

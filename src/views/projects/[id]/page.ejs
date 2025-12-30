@@ -27,26 +27,26 @@ const safePlatform = platform || platforms?.tw || { accent: "#000" };
     </div>
 
     <% if (safePlatform.id === 'tw' && platforms) { %>
-      <div class="dropdown">
-        <button class="btn btn-primary dropdown-toggle" type="button" id="editDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+      <div class="see-inside-dropdown">
+        <button class="btn btn-primary see-inside-dropdown-toggle" type="button" id="editsee-inside-dropdown" data-bs-toggle="see-inside-dropdown" aria-expanded="false">
           See inside using...
         </button>
-        <ul class="dropdown-menu" aria-labelledby="editDropdown">
+        <ul class="see-inside-dropdown-menu" aria-labelledby="editsee-inside-dropdown">
           <% platforms.forEach(p => { %>
             <% if (Array.isArray(p.edit) && p.edit.length === 2) { %>
               <li>
-                <a class="dropdown-item" target="_blank" href="<%= p.edit[0] %>">
+                <a class="see-inside-dropdown-item" target="_blank" href="<%= p.edit[0] %>">
                   <%= p.name %>
                 </a>
               </li>
               <li>
-                <a class="dropdown-item" target="_blank" href="<%= p.edit[1] %>">
+                <a class="see-inside-dropdown-item" target="_blank" href="<%= p.edit[1] %>">
                   <%= p.name %> (mirror)
                 </a>
               </li>
             <% } else { %>
               <li>
-                <a class="dropdown-item" target="_blank" href="<%= p.edit ? p.edit : '#' %>">
+                <a class="see-inside-dropdown-item" target="_blank" href="<%= p.edit ? p.edit : '#' %>">
                   <%= p.name %>
                 </a>
               </li>
@@ -493,7 +493,7 @@ document.querySelector(".delete-btn")?.addEventListener("click", function() {
 
 document.addEventListener("DOMContentLoaded", () => {
   // Find the single "See Inside" link for non-TW platforms
-  const editLink = document.querySelector('a.btn[data-platform]:not(.dropdown-toggle)');
+  const editLink = document.querySelector('a.btn[data-platform]:not(.see-inside-dropdown-toggle)');
   if (editLink) {
     const projectId = "<%= project.id %>"; // EJS inject project ID
     const apiRoot = window.location.origin;
@@ -504,24 +504,24 @@ document.addEventListener("DOMContentLoaded", () => {
   const apiRoot = window.location.origin;
   const projectId = "<%= project.id %>";
 
-  // Update all dropdown links to replace {url} with actual SB3 URL
-  document.querySelectorAll('.dropdown-menu a').forEach(link => {
+  // Update all see-inside-dropdown links to replace {url} with actual SB3 URL
+  document.querySelectorAll('.see-inside-dropdown-menu a').forEach(link => {
     if (link.href.includes("{url}")) {
       link.href = link.href.replace("{url}", `${apiRoot}/api/sb3?id=${projectId}`);
     }
   });
 
-  // Dropdown toggle logic
-  document.querySelectorAll('.dropdown-toggle').forEach(btn => {
+  // see-inside-dropdown toggle logic
+  document.querySelectorAll('.see-inside-dropdown-toggle').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
-      const parent = btn.closest('.dropdown');
+      const parent = btn.closest('.see-inside-dropdown');
       parent.classList.toggle('open');
     });
   });
 
   document.addEventListener('click', () => {
-    document.querySelectorAll('.dropdown.open').forEach(drop => drop.classList.remove('open'));
+    document.querySelectorAll('.see-inside-dropdown.open').forEach(drop => drop.classList.remove('open'));
   });
 });
 </script>

@@ -90,7 +90,7 @@ module.exports = async (req, res, db, dirname) => {
         } else {
           // Default fallback
           res.setHeader("Content-Type", "image/png");
-          return res.sendFile(path.join(dirname, "user.png"));
+          return res.sendFile(path.join(dirname, "static/user.png"));
         }
       }
 

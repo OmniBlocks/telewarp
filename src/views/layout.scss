@@ -145,3 +145,72 @@ main {
   color: white;
   background: #cc2222;
 }
+
+.user-link {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.header-avatar {
+  border-radius: 4px;
+  border: 1px solid;
+  @include t(border-color, black-transparent);
+}
+.user-block {
+  position: relative;
+  height: 100%;
+
+  .dropdown-menu {
+    display: none !important;
+    position: absolute;
+    right: 0;
+    top: units.$menu-bar-height;
+    min-width: 160px;
+    height: auto !important;
+    z-index: 1001;
+    
+    /* Ensure background color is forced */
+    @include t(background-color, menu-bar); 
+    border: 1px solid;
+    @include t(border-color, black-transparent);
+    border-top: none; 
+    border-radius: 0 0 4px 4px;
+    
+    flex-direction: column;
+    padding: 0; // Remove default padding to ensure hover fills space
+
+    .dropdown-item {
+      display: flex !important;
+      align-items: center;
+      height: 44px !important;
+      padding: 0 16px !important;
+      width: 100%;  
+      
+      /* Force the text color */
+      color: white !important; 
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: bold;
+      background-color: transparent; // Default state
+
+      &:hover {
+        /* This must match your header hover style */
+        @include t(background-color, black-transparent);
+        color: white !important;
+      }
+    }
+
+    hr {
+      margin: 0;
+      border: 0;
+      border-top: 1px solid;
+      @include t(border-top-color, black-transparent);
+      opacity: 0.3; // Soften the line
+    }
+  }
+
+  &.open .dropdown-menu {
+    display: flex !important;
+  }
+}

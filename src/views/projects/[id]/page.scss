@@ -458,14 +458,14 @@
 }
 
 /* =========================
-   Project Edit Dropdown
+   Project Edit see-inside-dropdown
    ========================= */
 
-.dropdown {
+.see-inside-dropdown {
   position: relative;
   display: inline-block;
 
-  .dropdown-toggle {
+  .see-inside-dropdown-toggle {
     @include t(background, primary); // Use your btn-primary background
     color: white;
     border: none;
@@ -483,7 +483,7 @@
     }
   }
 
-  .dropdown-menu {
+  .see-inside-dropdown-menu {
     display: none;
     position: absolute;
     top: 100%;
@@ -512,7 +512,7 @@
     }
   }
 
-  &.open .dropdown-menu {
+  &.open .see-inside-dropdown-menu {
     display: block;
   }
 }
