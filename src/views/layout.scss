@@ -2,7 +2,7 @@
 @use '../css/units.scss' as units;
 
 body {
-  background-color: theme(light, bg);
+  background-color: red;
   color: theme(light, text-color);
 
   a {
@@ -11,7 +11,7 @@ body {
 }
 
 body.dark {
-  background-color: theme(dark, bg);
+  background-color: red;
   color: theme(dark, text-color);
 
   a {
