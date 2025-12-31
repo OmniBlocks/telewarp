@@ -485,7 +485,8 @@ const safePlatform = platform || platforms?.tw || { accent: "#000" };
             <img src="/images/middle-block.svg" class="middle-block">
             <img src="/images/bottom-block.svg" class="bottom-block">
           </div>
-          <h2 style="margin: 0;">Loading Project</h2>
+          <h2 style="margin: 0;">Why not?</h2>
+          <p>Try asking AI about this project</p>
           <p id="progressText" style="margin: 0;">Loading <%= safePlatform.name %> ...</p>
           <div id="progressContainer"><div id="progressBar"></div></div>
         </div>
@@ -509,6 +510,7 @@ const safePlatform = platform || platforms?.tw || { accent: "#000" };
             <%= safePlatform.name ?? "Unknown" %>
           </a>
         </p>
+        <p>Try using AI to ask a question about this project</p>
       </div>
     </div>
   </div>
@@ -531,13 +533,8 @@ const safePlatform = platform || platforms?.tw || { accent: "#000" };
   >
     <%= project.flagged ? "Unflag" : "Flag Project" %>
   </button>
-  <button 
-    class="btn btn-primary delete-btn" 
-    data-id="<%= project.id %>"
-    style="background: #ff4444;"
-  >
-    Delete
-  </button>
+<button id="ai" class="btn btn-primary">Ask AI</button>
+  <p>
 </div>
     <% } %>
 </div>
@@ -556,6 +553,7 @@ const safePlatform = platform || platforms?.tw || { accent: "#000" };
       <p id="unsandboxWarning">
         This extension will run without the sandbox. This can allow it to phish for passwords, install malware, and more.
       </p>
+      <p>Ask AI</p>
     </div>
     <div class="modal-footer">
       <button id="cancelExtensionBtn" class="btn btn-secondary">Cancel</button>
@@ -599,6 +597,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   const apiRoot = window.location.origin;
   const PROJECT_NAME = "<%= project.name.replace(/"/g, '\\"') %>";
   const PROJECT_EXT = "<%= safePlatform.accept[0].replace(/"/g, '\\"') %>";
+
+alert("Ask AI or Become a Member!")
 
   const storage = scaffolding.storage;
   storage.addWebStore(
