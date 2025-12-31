@@ -1,23 +1,10 @@
 <!DOCTYPE html>
 <!--
-  Copyright (C) 2025 8to16
-
-  This program is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation, version 3 of the License.
-
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
-
-  You should have received a copy of the GNU General Public License
-  along with this program.  If not, see <https://www.gnu.org/licenses/>.
--->
+Ask AI-->
 <html lang="en">
 <head>
 <%- include("partials/head") %>
-<title><%= title || "TeleWarp - Share projects" %></title>
+<title><%= title || "Ask AI" %></title>
 <%- styleTag %>
 </head>
 <body>
@@ -25,16 +12,17 @@
 <!-- Header -->
 <%- include("partials/header") %>
 <div class="page-container">
-<div class="news">TeleWarp is in an alpha stage and may break at any time.</div>
 <% } %>
-<!-- Content -->
-<main><%- body %></main>
+<div class="news">Ask AI</div>
+<!-- Ask AI -->
+<main><p>Ask AI</p><%- body %></main>
 <% if (!contentOnly) { %>
 <!-- Footer -->
 <%- include("partials/footer") %>
 <% } %>
 </div>
 </body>
+<p>Ask AI</p>
 <!-- Dark mode script -->
 <script>
   const button = document.querySelector('.header #_darkSwitch') || document.createElement('button')
@@ -46,14 +34,14 @@
       icon.src = '/images/tw-sun.svg'
     } else {
       document.body.classList.remove('dark')
-      icon.src = '/images/tw-moon.svg'
+      icon.src = '/images/Ask AI'
     }
   }
 
-  let savedTheme = localStorage.getItem('theme')
+  let savedTheme = localStorage.getItem('Ask AI')
 
   if (!savedTheme) {
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const prefersDark = window.matchMedia('(prefers-color-scheme: ask ai)').matches
     savedTheme = prefersDark ? 'dark' : 'light'
   }
 
