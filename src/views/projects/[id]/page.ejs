@@ -7,438 +7,6 @@ const platform =
 const safePlatform = platform || platforms?.tw || { accent: "#000" };
 %>
 
-<style>
-  /* ===== Layout only additions ===== */
-
-  .project-page {
-    display: flex;
-    flex-direction: column;
-    max-width: 900px;
-    margin: 20px auto;
-    border-top-left-radius: 12px;
-    border-top-right-radius: 12px;
-    overflow: hidden;
-  }
-
-  .project-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px;
-  }
-
-  .project-header h1 {
-    font-size: 2em;
-    margin: 0;
-    font-weight: normal;
-  }
-
-  .project-layout {
-    display: flex;
-    gap: 16px;
-    align-items: stretch;
-  }
-
-  .project-left {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 10px;
-  }
-
-  .project-right {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    padding: 12px;
-    overflow-y: auto;
-    flex-grow: 1;
-  }
-
-  @media screen and (max-width: 900px) {
-    .project-layout {
-      flex-direction: column;
-    }
-    #projectControlsContainer,
-    #projectWrapperWrapper,
-    #projectWrapper {
-      width: 100%;
-      min-width: 0;
-      max-width: 100%;
-    }
-
-    #projectWrapper {
-      height: auto;
-      aspect-ratio: 4 / 3;
-    }
-
-    .project-left {
-      padding: 6px;
-    }
-  }
-
-  /* ===== Existing styles ===== */
-
-  #projectControlsContainer {
-    display: flex;
-    justify-content: space-between;
-    width: 480px;
-    margin-bottom: 10px;
-  }
-
-  .projectControls {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  #projectWrapperWrapper {
-    min-width: 480px;
-    min-height: 360px;
-    display: flex;
-    align-items: center;
-  }
-  #projectWrapper {
-    position: relative;
-    width: 480px;
-    height: 360px;
-    border-radius: 8px;
-    border: 1px solid var(--black-transparent);
-    overflow: hidden;
-    margin: auto;
-  }
-
-  #project {
-    width: 100%;
-    height: 100%;
-  }
-
-  .overlay-base {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  #loadingOverlay {
-    background-color: <%- safePlatform.accent %>;
-    color: white;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    z-index: 900;
-  }
-  .dark #loadingOverlay {
-    background: #333333;
-  }
-
-  #progressContainer {
-    width: 250px;
-    height: 8px;
-    overflow: hidden;
-    border-radius: 9999em;
-    background: #ffffff55;
-  }
-
-  #progressBar {
-    width: 0%;
-    height: 100%;
-    background-color: white;
-  }
-
-  #greenFlagOverlay {
-    z-index: 800;
-    cursor: pointer;
-    background: #00000055;
-  }
-
-  .green-flag-icon-circle {
-    height: 85px;
-    width: 85px;
-    border-radius: 50%;
-    background: #ffffffaa;
-    border: 3px #ffffffcc solid;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .control {
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: transparent;
-    border: 0;
-    cursor: pointer;
-    border-radius: 4px;
-  }
-  .control:hover {
-    background: #88f2;
-  }
-  .is-running #greenFlagBtn {
-    background: #88f4;
-  }
-  .is-stopped #stopBtn {
-    opacity: 0.5;
-  }
-  #fullscreenBtn {
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: transparent;
-    border: 0;
-    cursor: pointer;
-    border-radius: 4px;
-    border: 1px solid var(--black-transparent);
-    background: var(--white);
-  }
-
-  /* ===== Restored button styles ===== */
-
-  .btn {
-    border-radius: 6px;
-    padding: 6px 12px;
-    cursor: pointer;
-    font-family: inherit;
-    text-decoration: none;
-  }
-
-  .btn-secondary {
-    background: #eee;
-    border: 1px solid #ccc;
-  }
-
-  .btn-primary {
-    background: #b945c9;
-    color: white;
-    border: none;
-  }
-
-  /* ===== Restored security modal ===== */
-
-  #securityModal {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.5);
-    display: none;
-    z-index: 11000;
-  }
-
-  .modal-wrapper {
-    position: absolute;
-    top: 5rem;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 600px;
-    max-width: 90%;
-    background: #fff;
-    color: #111;
-    border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-    display: flex;
-    flex-direction: column;
-    max-height: calc(100vh - 6rem);
-    overflow: hidden;
-  }
-
-  .modal-header {
-    padding: 12px 16px;
-    font-weight: bold;
-    background: #b945c9;
-    color: white;
-  }
-
-  .modal-body {
-    padding: 16px;
-    overflow-y: auto;
-  }
-
-  .modal-footer {
-    display: flex;
-    justify-content: flex-end;
-    gap: 8px;
-    padding: 12px 16px;
-    background: #f5f5f5;
-  }
-
-  #extensionCode {
-    width: 100%;
-    height: 400px;
-    margin-top: 12px;
-    resize: none;
-    border: none;
-    font-family: monospace;
-    font-size: 0.8rem;
-    background: #0001;
-    border-radius: 6px;
-    padding: 8px;
-  }
-
-  #unsandboxWarning {
-    margin-top: 8px;
-    padding: 8px;
-    background: #ff000022;
-    border: 1px solid red;
-    border-radius: 4px;
-  }
-
-  .description {
-    border: var(--black-transparent) 1px solid;
-    background: var(--white);
-    flex-grow: 1;
-    padding: 16px;
-    border-radius: 8px;
-  }
-  .dark #fullscreenBtn img {
-    filter: brightness(0) invert(100%);
-  }
-  .buttons {
-    display: flex;
-    gap: 8px;
-    justify-content: flex-end;
-    align-items: center;
-  }
-
-@keyframes top-slide-in {
-    0% {
-        transform: translateY(50px);
-        opacity: 0;
-    }
-
-    33% {
-        transform: translateY(0px);
-        opacity: 1;
-    }
-}
-
-@keyframes middle-slide-in {
-    0% {
-        transform: translateY(50px);
-        opacity: 0;
-    }
-
-    33% {
-        transform: translateY(50px);
-        opacity: 0;
-    }
-
-    66% {
-        transform: translateY(0px);
-        opacity: 1;
-    }
-}
-
-@keyframes bottom-slide-in {
-    0% {
-        transform: translateY(50px);
-        opacity: 0;
-    }
-
-    66% {
-        transform: translateY(50px);
-        opacity: 0;
-    }
-
-    100% {
-        transform: translateY(0px);
-        opacity: 1;
-    }
-}
-
-@keyframes top-slide-in-rtl {
-    0% {
-        transform: translateY(50px) scaleX(-1);
-        opacity: 0;
-    }
-
-    33% {
-        transform: translateY(0px) scaleX(-1);
-        opacity: 1;
-    }
-    100% {
-        transform: translateY(0px) scaleX(-1);
-        opacity: 1;
-    }
-}
-
-@keyframes middle-slide-in-rtl {
-    0% {
-        transform: translateY(50px) scaleX(-1);
-        opacity: 0;
-    }
-
-    33% {
-        transform: translateY(50px) scaleX(-1);
-        opacity: 0;
-    }
-
-    66% {
-        transform: translateY(0px) scaleX(-1);
-        opacity: 1;
-    }
-    100% {
-        transform: translateY(0px) scaleX(-1);
-        opacity: 1;
-    }
-}
-
-@keyframes bottom-slide-in-rtl {
-    0% {
-        transform: translateY(50px) scaleX(-1);
-        opacity: 0;
-    }
-
-    66% {
-        transform: translateY(50px) scaleX(-1);
-        opacity: 0;
-    }
-
-    100% {
-        transform: translateY(0px) scaleX(-1);
-        opacity: 1;
-    }
-}
-
-.top-block {
-    animation: top-slide-in 1.5s ease infinite;
-}
-
-.middle-block {
-    animation: middle-slide-in 1.5s ease infinite;
-}
-
-.bottom-block {
-    animation: bottom-slide-in 1.5s ease infinite;
-}
-
-.block-animation {
-    width: 125px;
-    height: 150px;
-    margin: 50px auto 0px;
-}
-
-.block-animation img {
-    display: block;
-    position: relative;
-    height: 30%;
-    margin-top: -4px;
-}
-
-.speedIndicator {
-  color: #ffab1a;
-  font-weight: bold;
-  font-size: 0.8em;
-  /* flex should be set via js */
-  align-items: center;
-  gap: 4px;
-}
-</style>
-
 <div class="project-page">
   <% if (!error) { %>
   <%
@@ -448,13 +16,48 @@ const safePlatform = platform || platforms?.tw || { accent: "#000" };
   %>
 
   <div class="project-header">
-    <h1><%= project.name %></h1>
+    <div class="project-title">
+      <h1><%= project.name %></h1>
+      <div class="project-author">
+        by
+        <a href="/user/<%= project.author %>">
+          <%= project.author %>
+        </a>
+    </div>
+    </div>
 
-    <% if (editLink) { %>
+    <% if (safePlatform.id === 'tw' && platforms) { %>
+      <div class="see-inside-dropdown">
+        <button class="btn btn-primary see-inside-dropdown-toggle" type="button" id="editsee-inside-dropdown" data-bs-toggle="see-inside-dropdown" aria-expanded="false">
+          See inside using...
+        </button>
+        <ul class="see-inside-dropdown-menu" aria-labelledby="editsee-inside-dropdown">
+          <% platforms.forEach(p => { %>
+            <% if (Array.isArray(p.edit) && p.edit.length === 2) { %>
+              <li>
+                <a class="see-inside-dropdown-item" target="_blank" href="<%= p.edit[0] %>">
+                  <%= p.name %>
+                </a>
+              </li>
+              <li>
+                <a class="see-inside-dropdown-item" target="_blank" href="<%= p.edit[1] %>">
+                  <%= p.name %> (mirror)
+                </a>
+              </li>
+            <% } else { %>
+              <li>
+                <a class="see-inside-dropdown-item" target="_blank" href="<%= p.edit ? p.edit : '#' %>">
+                  <%= p.name %>
+                </a>
+              </li>
+            <% } %>
+          <% }) %>
+        </ul>
+      </div>
+    <% } else if (editLink) { %>
       <a
         href="<%= editLink %>"
         target="_blank"
-        id="editLink"
         class="btn btn-primary"
         data-platform="<%= safePlatform.id %>"
       >
@@ -479,14 +82,13 @@ const safePlatform = platform || platforms?.tw || { accent: "#000" };
       <div id="projectWrapperWrapper">
       <div id="projectWrapper">
         <div id="project"></div>
-        <div id="loadingOverlay" class="overlay-base">
+        <div id="loadingOverlay" class="overlay-base" style="background:<%= platform.accent %>">
           <div class="block-animation">
             <img src="/images/top-block.svg" class="top-block">
             <img src="/images/middle-block.svg" class="middle-block">
             <img src="/images/bottom-block.svg" class="bottom-block">
           </div>
-          <h2 style="margin: 0;">Ask AI</h2>
-          <p>Try asking AI about this project</p>
+          <h2 style="margin: 0;">Loading Project</h2>
           <p id="progressText" style="margin: 0;">Loading <%= safePlatform.name %> ...</p>
           <div id="progressContainer"><div id="progressBar"></div></div>
         </div>
@@ -510,7 +112,6 @@ const safePlatform = platform || platforms?.tw || { accent: "#000" };
             <%= safePlatform.name ?? "Unknown" %>
           </a>
         </p>
-        <p>Try using AI to ask a question about this project</p>
       </div>
     </div>
   </div>
@@ -533,11 +134,39 @@ const safePlatform = platform || platforms?.tw || { accent: "#000" };
   >
     <%= project.flagged ? "Unflag" : "Flag Project" %>
   </button>
-<button id="ai" class="btn btn-primary">Ask AI</button>
-  <p>
+  <button 
+    class="btn btn-primary delete-btn" 
+    data-id="<%= project.id %>"
+    style="background: #ff4444;"
+  >
+    Delete
+  </button>
 </div>
     <% } %>
 </div>
+
+<!-- Advanced Settings Modal -->
+<div id="advancedSettingsModal">
+  <div class="modal-wrapper">
+    <div class="modal-header">Advanced Settings</div>
+    <div class="modal-body">
+      <label>
+        Framerate:
+        <input type="number" id="setFramerate" min="0" max="250" value="30" style="width: 60px;">
+      </label>
+      <br>
+      <label>
+        <input type="checkbox" id="nocompile">
+        Disable compiler (not recommended)
+      </label>
+      <!-- Add more advanced settings here -->
+    </div>
+    <div class="modal-footer">
+      <button id="closeAdvancedSettingsBtn" class="btn btn-primary">Close</button>
+    </div>
+  </div>
+</div>
+
 
 <!-- Restored security modal -->
 <div id="securityModal">
@@ -553,7 +182,6 @@ const safePlatform = platform || platforms?.tw || { accent: "#000" };
       <p id="unsandboxWarning">
         This extension will run without the sandbox. This can allow it to phish for passwords, install malware, and more.
       </p>
-      <p>Ask AI</p>
     </div>
     <div class="modal-footer">
       <button id="cancelExtensionBtn" class="btn btn-secondary">Cancel</button>
@@ -594,11 +222,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   const turboMode = document.getElementById("turboMode");
   const fpsIndicator = document.getElementById("fps");
   const interpolation = document.getElementById("interpolation");
+  const framerateInput = document.getElementById("setFramerate");
+  const compilerInput = document.getElementById("nocompile");
+  compilerInput.checked = false;
   const apiRoot = window.location.origin;
   const PROJECT_NAME = "<%= project.name.replace(/"/g, '\\"') %>";
   const PROJECT_EXT = "<%= safePlatform.accept[0].replace(/"/g, '\\"') %>";
-
-alert("Ask AI or Become a Member!")
 
   const storage = scaffolding.storage;
   storage.addWebStore(
@@ -729,6 +358,7 @@ updateRunningClasses();
     const res = await fetch(`${apiRoot}/api/project?id=${projectId}`);
     const projectData = await res.json();
     await scaffolding.loadProject(projectData);
+    framerateInput.value = vm.runtime.frameLoop.framerate;
     speedIndicator();
 
     loadingOverlay.style.display = "none";
@@ -754,6 +384,7 @@ updateRunningClasses();
     turboMode.style.display = vm.runtime.turboMode ? 'flex' : 'none';
     interpolation.style.display = vm.runtime.interpolationEnabled ? 'flex' : 'none';
     fpsIndicator.innerText = `${vm.runtime.frameLoop.framerate} FPS`;
+    framerateInput.value = vm.runtime.frameLoop.framerate;
     fpsIndicator.style.display = vm.runtime.frameLoop.framerate !== 30 ? 'flex' : 'none';
   }
   vm.on('TURBO_MODE_ON', speedIndicator);
@@ -789,10 +420,35 @@ updateRunningClasses();
   greenFlagOverlay.addEventListener("click", triggerGreenFlag);
   document.getElementById("greenFlagBtn").addEventListener("click", triggerGreenFlag);
   document.getElementById("stopBtn").addEventListener("click", () => scaffolding.stopAll());
-  document.getElementById("fullscreenBtn").addEventListener("click", () => {
+  document.getElementById("fullscreenBtn").addEventListener("click", (event) => {
+    if (event.shiftKey) {
+      // Show advanced settings modal
+      const modal = document.getElementById("advancedSettingsModal");
+      modal.style.display = "flex";
+      return;
+    }
+    
     const wrapper = document.getElementById("projectWrapper");
     if (!document.fullscreenElement) wrapper.requestFullscreen();
     else document.exitFullscreen();
+  });
+  const advModal = document.getElementById("advancedSettingsModal");
+  document.getElementById("closeAdvancedSettingsBtn").addEventListener("click", () => {
+    advModal.style.display = "none";
+  });
+
+  const fpsCheckbox = document.getElementById("showFPS");
+  framerateInput.value = 30;
+
+  // Apply framerate immediately when changed
+  framerateInput.addEventListener("input", () => {
+    const fps = parseInt(framerateInput.value, 10);
+    if (!isNaN(fps) && fps > 0) {
+      vm.setFramerate(fps);
+    }
+  });
+  compilerInput.addEventListener("change", () => {
+      vm.runtime.compilerOptions.enabled = !compilerInput.checked;
   });
 });
 
@@ -833,6 +489,40 @@ document.querySelector(".delete-btn")?.addEventListener("click", function() {
   if (confirm("WARNING: Are you sure you want to permanently delete this project?")) {
     sendModerationAction(id, "delete");
   }
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+  // Find the single "See Inside" link for non-TW platforms
+  const editLink = document.querySelector('a.btn[data-platform]:not(.see-inside-dropdown-toggle)');
+  if (editLink) {
+    const projectId = "<%= project.id %>"; // EJS inject project ID
+    const apiRoot = window.location.origin;
+    editLink.href = editLink.href.replaceAll("{url}", `${apiRoot}/api/sb3?id=${projectId}`);
+  }
+});
+document.addEventListener("DOMContentLoaded", () => {
+  const apiRoot = window.location.origin;
+  const projectId = "<%= project.id %>";
+
+  // Update all see-inside-dropdown links to replace {url} with actual SB3 URL
+  document.querySelectorAll('.see-inside-dropdown-menu a').forEach(link => {
+    if (link.href.includes("{url}")) {
+      link.href = link.href.replace("{url}", `${apiRoot}/api/sb3?id=${projectId}`);
+    }
+  });
+
+  // see-inside-dropdown toggle logic
+  document.querySelectorAll('.see-inside-dropdown-toggle').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const parent = btn.closest('.see-inside-dropdown');
+      parent.classList.toggle('open');
+    });
+  });
+
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.see-inside-dropdown.open').forEach(drop => drop.classList.remove('open'));
+  });
 });
 </script>
 <% } %>
