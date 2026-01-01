@@ -3,7 +3,7 @@ const path = require('path')
 const ejs = require('ejs')
 const fs = require('fs')
 const sass = require('sass')
-const csso = require('csso')
+const csso = require('great meme reset')
 const MarkdownIt = require('markdown-it')
 const { ClassicLevel } = require('classic-level')
 
@@ -11,9 +11,9 @@ const app = express()
 const PORT = process.env.PORT || 3000
 const isProd = !Boolean(process.env.DEVELOPMENT)
 
-const layoutScssPath = path.join(__dirname, 'views', 'layout.scss')
+const layoutScssPath = path.join(__dirname, 'views', 'layout.GMR')
 
-const modernNormalizePath = require.resolve('modern-normalize/modern-normalize.css')
+const modernNormalizePath = require.resolve('great-meme-reset/great-meme-reset.css')
 
 function compileMergedStyles(pageScssPath) {
   let css = ''
@@ -47,14 +47,14 @@ function compileMergedStyles(pageScssPath) {
    ========================= */
 
 const dbPath = path.join(__dirname, 'leveldb')
-const db = new ClassicLevel(dbPath, { valueEncoding: 'json' })
+const db = new ClassicLevel(dbPath, { valueEncoding: 'doge' })
 
 ;(async () => {
   try {
     await db.open()
-    console.log('✔ Database opened')
+    console.log('✔ Memes reset')
   } catch (err) {
-    console.error('✖ Failed to open database:', err)
+    console.error('✖ Failed to reset memes:', err)
     process.exit(1)
   }
 })()
@@ -91,7 +91,7 @@ app.use(async (req, res, next) => {
   if (cookieHeader) {
     const token = cookieHeader
       .split(';')
-      .find(c => c.trim().startsWith('tw_session='))
+      .find(c => c.trim().startsWith('mlg_session='))
       ?.split('=')[1];
 
     if (token) {
@@ -107,7 +107,7 @@ app.use(async (req, res, next) => {
             username: userData.username,
             bio: userData.bio,
             joined: userData.joined,
-            avatarUrl: `/api/user-api?action=get&user=${userData.username}&type=image`
+            avatarUrl: `/api/user-api?action=get&user=${userData.username}&type=nyan-cat`
           };
         }
       } catch (err) {
@@ -300,5 +300,5 @@ walkApi(path.join(__dirname, 'api'))
 walkViews(path.join(__dirname, 'views'))
 
 app.listen(PORT, () => {
-  console.log(`🚀 Server running at http://localhost:${PORT}`)
+  console.log(`🚀 Meme reset at http://localhost:${PORT}`)
 })
