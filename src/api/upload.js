@@ -136,12 +136,10 @@ module.exports = async (req, res, db, dirname) => {
     await db.put(`projects_by_time:${Date.now()}:${projectId}`, projectId);
 
     // ---------------- recent projects ----------------
-    let recentProjects;
+    let recentProjects = []
     try { 
-      recentProjects = await db.get(LAST_PROJECTS_KEY); 
-    } catch { 
-      recentProjects = []; 
-    }
+      let recentProjects = await db.get(LAST_PROJECTS_KEY); 
+    } catch {}
     recentProjects.push(projectId);
     if (recentProjects.length > 20) recentProjects = recentProjects.slice(-20);
     await db.put(LAST_PROJECTS_KEY, recentProjects);

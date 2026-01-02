@@ -188,6 +188,7 @@ function walkViews(dir, baseRoute = '') {
           const mdFile = path.join(fullPath, 'page.md')
           if (fs.existsSync(ejsFile)) {
             bodyHtml = await ejs.renderFile(ejsFile, {
+              origin: req.protocol + '://' + req.get('host'), 
               params: req.params,
               ...routeOptions,
             })
@@ -213,6 +214,7 @@ function walkViews(dir, baseRoute = '') {
             contentOnly: routeOptions.contentOnly ?? false,
             user: req.user,
             params: req.params,
+            origin: req.protocol + '://' + req.get('host'),
             ...routeOptions,
           })
         } catch (err) {
