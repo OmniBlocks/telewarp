@@ -16,7 +16,7 @@
     "@turbowarp/scaffolding": "^0.3.0",
     "adm-zip": "^0.5.16",
     "bcrypt": "^6.0.0",
-    "classic-level": "^3.0.0",
+    "better-sqlite3": "^12.6.0",
     "csso": "^5.0.5",
     "ejs": "^3.1.10",
     "express": "^5.2.1",
@@ -25,6 +25,7 @@
     "modern-normalize": "^3.0.1",
     "multer": "^2.0.2",
     "p-limit": "^7.2.0",
+    "pg": "^8.16.3",
     "profanease": "^1.1.2",
     "sass": "^1.97.1"
   },

@@ -143,3 +143,9 @@ tmp
 telewarp-projects
 telewarp-avatars
 leveldb
+telewarp.db
+telewarp.db-shm
+telewarp.db-wal
+*.db
+*.db-shm
+*.db-wal

@@ -5,7 +5,7 @@ const fs = require('fs')
 const sass = require('sass')
 const csso = require('csso')
 const MarkdownIt = require('markdown-it')
-const { ClassicLevel } = require('classic-level')
+const { createDatabaseAdapter } = require('./db-adapter')
 
 const app = express()
 const PORT = process.env.PORT || 3000
@@ -46,8 +46,7 @@ function compileMergedStyles(pageScssPath) {
    DATABASE
    ========================= */
 
-const dbPath = path.join(__dirname, 'leveldb')
-const db = new ClassicLevel(dbPath, { valueEncoding: 'json' })
+const db = createDatabaseAdapter()
 
 ;(async () => {
   try {
