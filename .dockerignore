@@ -1,0 +1,17 @@
+node_modules
+npm-debug.log
+.git
+.gitignore
+*.md
+.env
+.env.*
+!.env.example
+tmp
+telewarp-projects
+telewarp-avatars
+leveldb
+*.db
+*.db-shm
+*.db-wal
+.vscode
+.idea

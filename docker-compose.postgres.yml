@@ -1,0 +1,24 @@
+# Simple PostgreSQL-only setup for local development and testing
+# Run: docker compose -f docker-compose.postgres.yml up -d
+# Connect with: DATABASE=postgresql DATABASE_URL=postgresql://telewarp:telewarp_dev_password@localhost:5432/telewarp npm start
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: telewarp-postgres
+    environment:
+      POSTGRES_USER: telewarp
+      POSTGRES_PASSWORD: telewarp_dev_password
+      POSTGRES_DB: telewarp
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U telewarp"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:

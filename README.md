@@ -24,11 +24,42 @@ DATABASE_URL=postgresql://user:password@host:port/database
 
 ### Running the Server
 
+#### Standalone (SQLite)
 ```bash
+npm install
 npm start
 ```
 
 For development with auto-reload:
 ```bash
 npm run dev
+```
+
+#### Docker Compose
+
+##### PostgreSQL Only (for local development)
+Start PostgreSQL container:
+```bash
+docker compose -f docker-compose.postgres.yml up -d
+```
+
+Then run the app locally with PostgreSQL:
+```bash
+DATABASE=postgresql DATABASE_URL=postgresql://telewarp:telewarp_dev_password@localhost:5432/telewarp npm start
+```
+
+Stop PostgreSQL:
+```bash
+docker compose -f docker-compose.postgres.yml down
+```
+
+##### Full Stack (App + PostgreSQL)
+Run everything with Docker Compose:
+```bash
+docker compose up -d
+```
+
+Stop everything:
+```bash
+docker compose down
 ```
