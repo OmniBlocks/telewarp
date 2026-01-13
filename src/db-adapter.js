@@ -102,7 +102,7 @@ class SQLiteAdapter {
         name: row.name,
         description: row.description || '',
         lang_id: row.lang_id,
-        metadata: JSON.parse(row.metadata),
+        metadata: row.metadata ? JSON.parse(row.metadata) : {},
         thumbnail: Boolean(row.thumbnail),
         created_at: row.created_at,
         flagged: Boolean(row.flagged)
@@ -332,7 +332,7 @@ class PostgreSQLAdapter {
         name: row.name,
         description: row.description || '',
         lang_id: row.lang_id,
-        metadata: row.metadata,
+        metadata: row.metadata || {},
         thumbnail: row.thumbnail,
         created_at: parseInt(row.created_at),
         flagged: row.flagged
@@ -415,7 +415,7 @@ class PostgreSQLAdapter {
         value.name,
         value.description || '',
         value.lang_id,
-        JSON.stringify(value.metadata),
+        value.metadata,
         value.thumbnail || false,
         value.created_at,
         value.flagged || false
